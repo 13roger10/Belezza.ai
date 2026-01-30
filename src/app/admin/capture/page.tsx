@@ -38,6 +38,11 @@ export default function CapturePage() {
     }
   }, [capturedImage, router]);
 
+  // Atualizar imagem quando transformacoes sao aplicadas no preview
+  const handleImageChange = useCallback((newImageData: string) => {
+    setCapturedImage(newImageData);
+  }, []);
+
   const handleSelectFromGallery = useCallback((imageData: string) => {
     setCapturedImage(imageData);
     setMode("preview");
@@ -52,6 +57,7 @@ export default function CapturePage() {
           onConfirm={handleConfirm}
           onRetake={handleRetake}
           onCancel={handleCancel}
+          onImageChange={handleImageChange}
         />
       </div>
     );
