@@ -4,7 +4,10 @@
       "Bash(npx create-next-app:*)",
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(node scripts/generate-icons.mjs:*)",
+      "Bash(npx tsc:*)",
+      "Bash(curl:*)"
     ]
   }
 }

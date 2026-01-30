@@ -6,9 +6,10 @@ import Image from "next/image";
 import { AdminLayout } from "@/components/layout";
 import { Button, Input } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
-import { UploadProgress, UploadStatus } from "@/components/upload";
-import { uploadService, UploadResult } from "@/services/upload";
+import { UploadProgress } from "@/components/upload";
+import { useUpload } from "@/hooks/useUpload";
 import { postService } from "@/services/post";
+import type { UploadResult } from "@/services/upload";
 
 type Platform = "instagram" | "facebook" | "both";
 
@@ -19,11 +20,39 @@ export default function CreatePostPage() {
   // Estados da imagem
   const [imageData, setImageData] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<UploadResult | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState<string | undefined>();
 
-  // Estados do formulário
+  // Hook de upload
+  const {
+    phase: uploadStatus,
+    progress: uploadProgress,
+    error: uploadError,
+    result: uploadResult,
+    fileName,
+    fileSize,
+    estimatedTimeRemaining,
+    upload,
+    cancel,
+    reset: resetUpload,
+    retry,
+    isUploading,
+    isComplete: isUploadComplete,
+    isError: isUploadError,
+    isIdle: isUploadIdle,
+  } = useUpload({
+    maxWidth: 1080,
+    maxHeight: 1080,
+    quality: 0.9,
+    autoOptimize: true,
+    onComplete: (result) => {
+      setUploadedImage(result);
+      success("Upload concluido!", "Imagem enviada com sucesso");
+    },
+    onError: (err) => {
+      showError("Erro no upload", err.message || "Nao foi possivel enviar a imagem");
+    },
+  });
+
+  // Estados do formulario
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("");
@@ -31,7 +60,7 @@ export default function CreatePostPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Carregar imagem da sessão
+  // Carregar imagem da sessao
   useEffect(() => {
     const storedImage = sessionStorage.getItem("editedImage");
     if (storedImage) {
@@ -42,44 +71,26 @@ export default function CreatePostPage() {
     }
   }, [router, warning]);
 
-  // Função de upload
-  const handleUpload = useCallback(async () => {
-    if (!imageData) return;
-
-    setUploadStatus("optimizing");
-    setUploadProgress(0);
-    setUploadError(undefined);
-
-    try {
-      setUploadStatus("uploading");
-
-      const result = await uploadService.uploadImage(imageData, {
-        onProgress: (progress) => {
-          setUploadProgress(progress.percentage);
-        },
-        optimize: true,
-        maxWidth: 1080,
-        maxHeight: 1080,
-        quality: 0.9,
-      });
-
-      setUploadStatus("complete");
-      setUploadProgress(100);
-      setUploadedImage(result);
-      success("Upload concluído!", "Imagem enviada com sucesso");
-    } catch (err) {
-      setUploadStatus("error");
-      setUploadError(err instanceof Error ? err.message : "Erro no upload");
-      showError("Erro no upload", "Não foi possível enviar a imagem");
-    }
-  }, [imageData, success, showError]);
-
-  // Iniciar upload automaticamente quando a imagem é carregada
+  // Iniciar upload quando a imagem for carregada
   useEffect(() => {
-    if (imageData && uploadStatus === "idle") {
-      handleUpload();
+    if (imageData && isUploadIdle) {
+      upload(imageData);
     }
-  }, [imageData, uploadStatus, handleUpload]);
+  }, [imageData, isUploadIdle, upload]);
+
+  // Atualizar uploadedImage quando o resultado chegar
+  useEffect(() => {
+    if (uploadResult) {
+      setUploadedImage(uploadResult);
+    }
+  }, [uploadResult]);
+
+  // Funcao de retry
+  const handleRetry = useCallback(() => {
+    if (imageData) {
+      retry(imageData);
+    }
+  }, [imageData, retry]);
 
   // Gerar legenda com IA (mock)
   const handleGenerateCaption = async () => {
@@ -178,7 +189,6 @@ export default function CreatePostPage() {
     return null;
   }
 
-  const isUploadComplete = uploadStatus === "complete";
   const canSave = isUploadComplete && !isSaving;
 
   return (
@@ -201,10 +211,25 @@ export default function CreatePostPage() {
                   <UploadProgress
                     status={uploadStatus}
                     progress={uploadProgress}
-                    error={uploadError}
-                    onRetry={handleUpload}
+                    error={uploadError || undefined}
+                    fileName={fileName || undefined}
+                    fileSize={fileSize}
+                    estimatedTime={estimatedTimeRemaining}
+                    onRetry={handleRetry}
+                    onCancel={cancel}
+                    variant="overlay"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Badge de sucesso */}
+            {isUploadComplete && (
+              <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-sm font-medium text-white shadow-lg">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Enviado
               </div>
             )}
           </div>
@@ -301,19 +326,32 @@ export default function CreatePostPage() {
           </label>
           <div className="flex gap-2">
             {[
-              { value: "instagram" as Platform, label: "Instagram" },
-              { value: "facebook" as Platform, label: "Facebook" },
-              { value: "both" as Platform, label: "Ambos" },
+              { value: "instagram" as Platform, label: "Instagram", icon: (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              )},
+              { value: "facebook" as Platform, label: "Facebook", icon: (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              )},
+              { value: "both" as Platform, label: "Ambos", icon: (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                </svg>
+              )},
             ].map((option) => (
               <button
                 key={option.value}
                 onClick={() => setPlatform(option.value)}
-                className={`flex-1 rounded-lg border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                   platform === option.value
                     ? "border-violet-500 bg-violet-50 text-violet-700"
                     : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                 }`}
               >
+                {option.icon}
                 {option.label}
               </button>
             ))}

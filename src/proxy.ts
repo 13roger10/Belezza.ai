@@ -7,7 +7,7 @@ const protectedRoutes = ["/admin"];
 // Rotas públicas (não requerem autenticação)
 const publicRoutes = ["/", "/login"];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Verificar se é uma rota protegida

@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
+    authService.logout(); // Remove cookie e localStorage
     setAuth(null, null);
   }, [setAuth]);
 
@@ -71,6 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userStr = localStorage.getItem(USER_STORAGE_KEY);
 
     if (!token || !userStr) {
+      // Limpa qualquer cookie órfão
+      authService.logout();
       setState((prev) => ({ ...prev, isLoading: false }));
       return;
     }
@@ -82,11 +85,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isValid = await authService.verifyToken(token);
 
       if (isValid) {
+        // Redefine o cookie para garantir sincronização
+        if (typeof document !== "undefined") {
+          const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString();
+          document.cookie = `auth_token=${token}; path=/; expires=${expires}; SameSite=Lax`;
+        }
         setAuth(user, token);
       } else {
+        authService.logout();
         setAuth(null, null);
       }
     } catch {
+      authService.logout();
       setAuth(null, null);
     }
   }, [setAuth]);
