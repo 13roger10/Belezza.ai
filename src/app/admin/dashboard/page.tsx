@@ -28,8 +28,8 @@ const stats = [
 const quickActions = [
   {
     label: "Criar Novo Post",
-    description: "Crie um post com ajuda da IA",
-    href: "/admin/posts/create",
+    description: "Capture ou escolha uma imagem",
+    href: "/admin/capture",
     icon: ImagePlus,
     color: "bg-violet-500",
   },
@@ -126,6 +126,15 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Botão Flutuante - Nova Publicação */}
+      <Link
+        href="/admin/capture"
+        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg transition-all hover:scale-105 hover:bg-violet-600 active:scale-95"
+        aria-label="Criar nova publicação"
+      >
+        <ImagePlus className="h-6 w-6" />
+      </Link>
     </AdminLayout>
   );
 }

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button, Input } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const { error: showError } = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,13 +17,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     try {
       await login(formData.email, formData.password);
-      router.push("/admin/dashboard");
+      router.push("/admin/welcome");
     } catch {
-      setError("Email ou senha inválidos");
+      showError("Falha no login", "Email ou senha inválidos");
     }
   };
 
@@ -62,79 +61,40 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="rounded-2xl bg-white p-6 shadow-xl"
         >
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 transition-colors focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                placeholder="admin@exemplo.com"
-              />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="admin@exemplo.com"
+            />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
-              >
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 transition-colors focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <Input
+              label="Senha"
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="••••••••"
+              showPasswordToggle
+            />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-violet-500 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            isLoading={isLoading}
+            fullWidth
+            className="mt-6"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Entrando...
-              </>
-            ) : (
-              "Entrar"
-            )}
-          </button>
+            {isLoading ? "Entrando..." : "Entrar"}
+          </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
