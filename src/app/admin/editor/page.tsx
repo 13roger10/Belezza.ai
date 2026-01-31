@@ -1,17 +1,29 @@
 "use client";
 
-import { useState, useEffect, useCallback, ReactNode } from "react";
+import { useState, useEffect, useCallback, ReactNode, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
-
-type EditorTool = "crop" | "filter" | "adjust" | "text" | "draw" | "sticker";
+import { useImageEditor } from "@/hooks/useImageEditor";
+import {
+  AIEnhancePanel,
+  AIBackgroundPanel,
+  AIStylePanel,
+  AIProcessingOverlay,
+  EditingHistory,
+  CropTool,
+  TextOverlayPanel,
+  DrawingPanel,
+  StickerPanel,
+} from "@/components/editor";
+import type { EditorTool as EditorToolType, TextOverlayConfig, StickerOverlay } from "@/types";
 
 interface Tool {
-  id: EditorTool;
+  id: EditorToolType;
   label: string;
   icon: ReactNode;
+  isAI?: boolean;
 }
 
 const tools: Tool[] = [
@@ -141,6 +153,70 @@ const tools: Tool[] = [
       </svg>
     ),
   },
+  {
+    id: "ai-enhance",
+    label: "IA Melhorar",
+    isAI: true,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5 w-5"
+      >
+        <path d="M12 3l1.912 5.813a2 2 0 001.272 1.272L21 12l-5.816 1.915a2 2 0 00-1.272 1.272L12 21l-1.912-5.813a2 2 0 00-1.272-1.272L3 12l5.816-1.915a2 2 0 001.272-1.272L12 3z" />
+      </svg>
+    ),
+  },
+  {
+    id: "ai-background",
+    label: "IA Fundo",
+    isAI: true,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5 w-5"
+      >
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+        <circle cx="9" cy="9" r="2" />
+        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+      </svg>
+    ),
+  },
+  {
+    id: "ai-generate",
+    label: "IA Estilos",
+    isAI: true,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5 w-5"
+      >
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+        <polyline points="7.5 19.79 7.5 14.6 3 12" />
+        <polyline points="21 12 16.5 14.6 16.5 19.79" />
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+        <line x1="12" x2="12" y1="22.08" y2="12" />
+      </svg>
+    ),
+  },
 ];
 
 const filters = [
@@ -150,21 +226,41 @@ const filters = [
   { id: "saturate", label: "Vívido", class: "saturate-150" },
   { id: "contrast", label: "Contraste", class: "contrast-125" },
   { id: "brightness", label: "Claro", class: "brightness-110" },
+  { id: "vintage", label: "Vintage", class: "sepia-[.35] contrast-[1.1] brightness-[0.9]" },
+  { id: "cool", label: "Frio", class: "hue-rotate-180 saturate-[1.2]" },
+  { id: "warm", label: "Quente", class: "-hue-rotate-15 saturate-[1.3]" },
 ];
 
 export default function EditorPage() {
   const router = useRouter();
-  const { warning } = useToast();
-  const [imageData, setImageData] = useState<string | null>(null);
-  const [activeTool, setActiveTool] = useState<EditorTool | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState("none");
+  const { warning, success } = useToast();
+  const [initialImage, setInitialImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState("none");
+  const [showAIPanel, setShowAIPanel] = useState<
+    "enhance" | "background" | "style" | null
+  >(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Estado de ajustes
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [saturation, setSaturation] = useState(100);
+
+  // Drag state for overlays
+  const [draggedOverlay, setDraggedOverlay] = useState<{
+    type: "text" | "sticker";
+    id: string;
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+  } | null>(null);
 
   useEffect(() => {
-    // Recuperar imagem do sessionStorage
     const storedImage = sessionStorage.getItem("capturedImage");
     if (storedImage) {
-      setImageData(storedImage);
+      setInitialImage(storedImage);
     } else {
       warning("Nenhuma imagem", "Selecione uma imagem primeiro");
       router.push("/admin/capture");
@@ -172,26 +268,224 @@ export default function EditorPage() {
     setIsLoading(false);
   }, [router, warning]);
 
+  // Hook do editor (só inicializa quando temos imagem)
+  const editor = useImageEditor(initialImage || "");
+
+  // Load image dimensions when image changes
+  useEffect(() => {
+    if (editor.currentImage) {
+      editor.loadImageDimensions(editor.currentImage);
+    }
+  }, [editor.currentImage, editor.loadImageDimensions]);
+
   const handleBack = useCallback(() => {
     router.push("/admin/capture");
   }, [router]);
 
-  const handleContinue = useCallback(() => {
-    // Salvar imagem editada e ir para a próxima etapa (gerar texto com IA)
-    if (imageData) {
-      sessionStorage.setItem("editedImage", imageData);
-      router.push("/admin/post/create");
+  const handleContinue = useCallback(async () => {
+    // Flatten overlays before saving
+    if (editor.textOverlays.length > 0 || editor.stickerOverlays.length > 0) {
+      const mergedImage = await editor.mergeOverlaysToImage();
+      sessionStorage.setItem("editedImage", mergedImage);
+    } else {
+      sessionStorage.setItem("editedImage", editor.currentImage);
     }
-  }, [imageData, router]);
+    success("Imagem salva", "Continuando para criar post...");
+    router.push("/admin/post/create");
+  }, [editor, router, success]);
 
-  const handleToolSelect = useCallback((toolId: EditorTool) => {
-    setActiveTool((prev) => (prev === toolId ? null : toolId));
-  }, []);
+  const handleToolSelect = useCallback(
+    (toolId: EditorToolType) => {
+      editor.setSelectedTool(toolId === editor.selectedTool ? "select" : toolId);
+      setShowAIPanel(null);
+
+      // Handle special tool actions
+      if (toolId === "crop") {
+        editor.setShowCropTool(true);
+      } else if (toolId === "draw") {
+        editor.setShowDrawingTool(true);
+      } else if (toolId === "ai-enhance") {
+        setShowAIPanel("enhance");
+      } else if (toolId === "ai-background") {
+        setShowAIPanel("background");
+      } else if (toolId === "ai-generate") {
+        setShowAIPanel("style");
+      }
+    },
+    [editor]
+  );
+
+  const handleFilterSelect = useCallback(
+    async (filterId: string) => {
+      setSelectedFilter(filterId);
+      if (filterId !== "none") {
+        await editor.applyFilter(filterId);
+      }
+    },
+    [editor]
+  );
+
+  const handleAdjustmentChange = useCallback(
+    async (type: string, value: number) => {
+      switch (type) {
+        case "brightness":
+          setBrightness(value);
+          break;
+        case "contrast":
+          setContrast(value);
+          break;
+        case "saturation":
+          setSaturation(value);
+          break;
+      }
+      await editor.applyAdjustment(type, value);
+    },
+    [editor]
+  );
+
+  const getAdjustmentStyle = useCallback(() => {
+    return {
+      filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+    };
+  }, [brightness, contrast, saturation]);
 
   const getCurrentFilterClass = useCallback(() => {
     const filter = filters.find((f) => f.id === selectedFilter);
     return filter?.class || "";
   }, [selectedFilter]);
+
+  // Drag handlers for overlays
+  const handleOverlayMouseDown = useCallback(
+    (
+      e: React.MouseEvent,
+      type: "text" | "sticker",
+      id: string,
+      currentX: number,
+      currentY: number
+    ) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraggedOverlay({
+        type,
+        id,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: currentX,
+        initialY: currentY,
+      });
+
+      if (type === "text") {
+        editor.setSelectedTextId(id);
+      } else {
+        editor.setSelectedStickerId(id);
+      }
+    },
+    [editor]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!draggedOverlay || !imageContainerRef.current) return;
+
+      const rect = imageContainerRef.current.getBoundingClientRect();
+      const scaleX = editor.imageDimensions.width / rect.width;
+      const scaleY = editor.imageDimensions.height / rect.height;
+
+      const deltaX = (e.clientX - draggedOverlay.startX) * scaleX;
+      const deltaY = (e.clientY - draggedOverlay.startY) * scaleY;
+
+      const newX = draggedOverlay.initialX + deltaX;
+      const newY = draggedOverlay.initialY + deltaY;
+
+      if (draggedOverlay.type === "text") {
+        editor.updateTextOverlay(draggedOverlay.id, { x: newX, y: newY });
+      } else {
+        editor.updateStickerOverlay(draggedOverlay.id, { x: newX, y: newY });
+      }
+    },
+    [draggedOverlay, editor]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setDraggedOverlay(null);
+  }, []);
+
+  // Render text overlay
+  const renderTextOverlay = (text: TextOverlayConfig) => {
+    const scale = imageContainerRef.current
+      ? imageContainerRef.current.clientWidth / editor.imageDimensions.width
+      : 1;
+
+    return (
+      <div
+        key={text.id}
+        className={`absolute cursor-move select-none ${
+          editor.selectedTextId === text.id
+            ? "ring-2 ring-violet-500 ring-offset-2 ring-offset-transparent"
+            : ""
+        }`}
+        style={{
+          left: text.x * scale,
+          top: text.y * scale,
+          fontSize: text.fontSize * scale,
+          fontFamily: text.fontFamily,
+          fontWeight: text.fontWeight,
+          fontStyle: text.fontStyle,
+          color: text.color,
+          backgroundColor: text.backgroundColor,
+          opacity: text.opacity,
+          transform: `rotate(${text.rotation}deg)`,
+          textAlign: text.textAlign,
+          textShadow: text.shadow
+            ? `${text.shadow.offsetX}px ${text.shadow.offsetY}px ${text.shadow.blur}px ${text.shadow.color}`
+            : undefined,
+          padding: "4px 8px",
+        }}
+        onMouseDown={(e) =>
+          handleOverlayMouseDown(e, "text", text.id, text.x, text.y)
+        }
+      >
+        {text.text}
+      </div>
+    );
+  };
+
+  // Render sticker overlay
+  const renderStickerOverlay = (sticker: StickerOverlay) => {
+    const scale = imageContainerRef.current
+      ? imageContainerRef.current.clientWidth / editor.imageDimensions.width
+      : 1;
+
+    return (
+      <div
+        key={sticker.id}
+        className={`absolute cursor-move select-none ${
+          editor.selectedStickerId === sticker.id
+            ? "ring-2 ring-violet-500 ring-offset-2 ring-offset-transparent"
+            : ""
+        }`}
+        style={{
+          left: sticker.x * scale,
+          top: sticker.y * scale,
+          width: sticker.width * scale,
+          height: sticker.height * scale,
+          fontSize: sticker.height * scale * 0.8,
+          opacity: sticker.opacity,
+          transform: `rotate(${sticker.rotation}deg) ${
+            sticker.flipH ? "scaleX(-1)" : ""
+          } ${sticker.flipV ? "scaleY(-1)" : ""}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onMouseDown={(e) =>
+          handleOverlayMouseDown(e, "sticker", sticker.id, sticker.x, sticker.y)
+        }
+      >
+        {sticker.src}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -201,7 +495,7 @@ export default function EditorPage() {
     );
   }
 
-  if (!imageData) {
+  if (!initialImage) {
     return null;
   }
 
@@ -227,36 +521,158 @@ export default function EditorPage() {
           </svg>
           Voltar
         </button>
-        <h1 className="text-lg font-semibold text-white">Editar imagem</h1>
+
+        {/* History Controls */}
+        <div className="flex items-center gap-2">
+          <EditingHistory
+            history={editor.history}
+            currentIndex={editor.historyIndex}
+            canUndo={editor.canUndo}
+            canRedo={editor.canRedo}
+            onUndo={editor.undo}
+            onRedo={editor.redo}
+          />
+        </div>
+
         <Button onClick={handleContinue} size="sm">
           Continuar
         </Button>
       </header>
 
       {/* Área de edição */}
-      <div className="relative flex-1 overflow-hidden">
+      <div
+        className="relative flex-1 overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         <div className="flex h-full items-center justify-center p-4">
-          <div className="relative max-h-full max-w-full">
+          <div
+            ref={imageContainerRef}
+            className="relative max-h-full max-w-full"
+          >
             <Image
-              src={imageData}
+              src={editor.currentImage || initialImage}
               alt="Imagem para editar"
               width={800}
               height={800}
-              className={`max-h-[60vh] w-auto rounded-lg object-contain ${getCurrentFilterClass()}`}
+              className={`max-h-[55vh] w-auto rounded-lg object-contain transition-all ${getCurrentFilterClass()}`}
+              style={
+                editor.selectedTool === "adjust"
+                  ? getAdjustmentStyle()
+                  : undefined
+              }
               priority
+              draggable={false}
             />
+
+            {/* Render Text Overlays */}
+            {editor.textOverlays.map(renderTextOverlay)}
+
+            {/* Render Sticker Overlays */}
+            {editor.stickerOverlays.map(renderStickerOverlay)}
           </div>
         </div>
+
+        {/* AI Processing Overlay */}
+        <AIProcessingOverlay
+          processing={editor.aiProcessing}
+          onCancel={editor.cancelAIOperation}
+        />
+
+        {/* AI Panels */}
+        {showAIPanel === "enhance" && (
+          <div className="absolute right-4 top-4 z-40">
+            <AIEnhancePanel
+              onEnhance={editor.runAIEnhance}
+              processing={editor.aiProcessing}
+              onCancel={editor.cancelAIOperation}
+            />
+          </div>
+        )}
+
+        {showAIPanel === "background" && (
+          <div className="absolute right-4 top-4 z-40">
+            <AIBackgroundPanel
+              onProcess={editor.runBackgroundProcess}
+              processing={editor.aiProcessing}
+              onCancel={editor.cancelAIOperation}
+            />
+          </div>
+        )}
+
+        {showAIPanel === "style" && (
+          <div className="absolute right-4 top-4 z-40">
+            <AIStylePanel
+              onApplyStyle={editor.runGenerativeEdit}
+              processing={editor.aiProcessing}
+              onCancel={editor.cancelAIOperation}
+            />
+          </div>
+        )}
+
+        {/* Manual Editing Panels */}
+        {editor.selectedTool === "text" && (
+          <div className="absolute right-4 top-4 z-40">
+            <TextOverlayPanel
+              overlays={editor.textOverlays}
+              selectedId={editor.selectedTextId}
+              onAdd={editor.addTextOverlay}
+              onUpdate={editor.updateTextOverlay}
+              onDelete={editor.deleteTextOverlay}
+              onSelect={editor.setSelectedTextId}
+            />
+          </div>
+        )}
+
+        {editor.selectedTool === "sticker" && (
+          <div className="absolute right-4 top-4 z-40">
+            <StickerPanel
+              overlays={editor.stickerOverlays}
+              selectedId={editor.selectedStickerId}
+              onAdd={editor.addStickerOverlay}
+              onUpdate={editor.updateStickerOverlay}
+              onDelete={editor.deleteStickerOverlay}
+              onSelect={editor.setSelectedStickerId}
+            />
+          </div>
+        )}
       </div>
 
+      {/* Crop Tool Modal */}
+      {editor.showCropTool && (
+        <CropTool
+          imageUrl={editor.currentImage}
+          imageWidth={editor.imageDimensions.width}
+          imageHeight={editor.imageDimensions.height}
+          onCrop={editor.applyCrop}
+          onCancel={() => editor.setShowCropTool(false)}
+        />
+      )}
+
+      {/* Drawing Tool Modal */}
+      {editor.showDrawingTool && (
+        <DrawingPanel
+          imageUrl={editor.currentImage}
+          imageWidth={editor.imageDimensions.width}
+          imageHeight={editor.imageDimensions.height}
+          paths={editor.drawingPaths}
+          onAddPath={editor.addDrawingPath}
+          onUndo={editor.undoDrawingPath}
+          onClear={editor.clearDrawingPaths}
+          onApply={editor.applyDrawing}
+          onCancel={() => editor.setShowDrawingTool(false)}
+        />
+      )}
+
       {/* Painel de ferramenta ativa */}
-      {activeTool === "filter" && (
+      {editor.selectedTool === "filter" && (
         <div className="border-t border-gray-800 bg-gray-900 p-4">
           <div className="flex gap-3 overflow-x-auto pb-2">
             {filters.map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => setSelectedFilter(filter.id)}
+                onClick={() => handleFilterSelect(filter.id)}
                 className={`flex flex-col items-center gap-2 ${
                   selectedFilter === filter.id
                     ? "text-violet-400"
@@ -271,7 +687,7 @@ export default function EditorPage() {
                   }`}
                 >
                   <Image
-                    src={imageData}
+                    src={initialImage}
                     alt={filter.label}
                     width={64}
                     height={64}
@@ -285,7 +701,7 @@ export default function EditorPage() {
         </div>
       )}
 
-      {activeTool === "adjust" && (
+      {editor.selectedTool === "adjust" && (
         <div className="border-t border-gray-800 bg-gray-900 p-4">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
@@ -294,9 +710,15 @@ export default function EditorPage() {
                 type="range"
                 min="50"
                 max="150"
-                defaultValue="100"
-                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700"
+                value={brightness}
+                onChange={(e) =>
+                  handleAdjustmentChange("brightness", Number(e.target.value))
+                }
+                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700 accent-violet-500"
               />
+              <span className="w-12 text-right text-sm text-white/50">
+                {brightness}%
+              </span>
             </div>
             <div className="flex items-center gap-4">
               <span className="w-20 text-sm text-white/70">Contraste</span>
@@ -304,9 +726,15 @@ export default function EditorPage() {
                 type="range"
                 min="50"
                 max="150"
-                defaultValue="100"
-                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700"
+                value={contrast}
+                onChange={(e) =>
+                  handleAdjustmentChange("contrast", Number(e.target.value))
+                }
+                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700 accent-violet-500"
               />
+              <span className="w-12 text-right text-sm text-white/50">
+                {contrast}%
+              </span>
             </div>
             <div className="flex items-center gap-4">
               <span className="w-20 text-sm text-white/70">Saturação</span>
@@ -314,59 +742,140 @@ export default function EditorPage() {
                 type="range"
                 min="0"
                 max="200"
-                defaultValue="100"
-                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700"
+                value={saturation}
+                onChange={(e) =>
+                  handleAdjustmentChange("saturation", Number(e.target.value))
+                }
+                className="h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-700 accent-violet-500"
               />
+              <span className="w-12 text-right text-sm text-white/50">
+                {saturation}%
+              </span>
             </div>
-          </div>
-        </div>
-      )}
-
-      {activeTool === "text" && (
-        <div className="border-t border-gray-800 bg-gray-900 p-4">
-          <div className="text-center text-white/50">
-            <p className="text-sm">
-              Toque na imagem para adicionar texto
-            </p>
-            <p className="mt-1 text-xs">
-              (Funcionalidade completa em breve)
-            </p>
-          </div>
-        </div>
-      )}
-
-      {activeTool === "crop" && (
-        <div className="border-t border-gray-800 bg-gray-900 p-4">
-          <div className="flex justify-center gap-4">
-            {["1:1", "4:5", "16:9", "9:16"].map((ratio) => (
-              <button
-                key={ratio}
-                className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-white/70 transition-colors hover:border-violet-500 hover:text-white"
-              >
-                {ratio}
-              </button>
-            ))}
           </div>
         </div>
       )}
 
       {/* Barra de ferramentas */}
       <div className="border-t border-gray-800 bg-gray-900 px-2 py-3">
-        <div className="flex justify-around">
+        <div className="flex justify-around overflow-x-auto">
           {tools.map((tool) => (
             <button
               key={tool.id}
               onClick={() => handleToolSelect(tool.id)}
-              className={`flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors ${
-                activeTool === tool.id
-                  ? "bg-violet-500/20 text-violet-400"
+              className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-colors ${
+                editor.selectedTool === tool.id
+                  ? tool.isAI
+                    ? "bg-gradient-to-br from-purple-500/30 to-pink-500/30 text-pink-400"
+                    : "bg-violet-500/20 text-violet-400"
                   : "text-white/70 hover:text-white"
               }`}
             >
-              {tool.icon}
+              {tool.isAI && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+              )}
+              <div className="relative">
+                {tool.icon}
+                {tool.isAI && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse" />
+                )}
+              </div>
               <span className="text-xs">{tool.label}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Quick Actions Bar */}
+      <div className="flex items-center justify-between border-t border-gray-800 bg-gray-950 px-4 py-2">
+        <button
+          onClick={editor.resetToOriginal}
+          className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          Resetar
+        </button>
+
+        <div className="flex items-center gap-4">
+          {(editor.textOverlays.length > 0 ||
+            editor.stickerOverlays.length > 0) && (
+            <button
+              onClick={editor.flattenOverlays}
+              className="flex items-center gap-1 text-sm text-violet-400 hover:text-violet-300 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+              </svg>
+              Mesclar
+            </button>
+          )}
+
+          <button
+            onClick={() => editor.rotate(90)}
+            className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+            </svg>
+            Girar
+          </button>
+
+          <button
+            onClick={() => editor.flip("horizontal")}
+            className="flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" />
+              <path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" />
+              <path d="M12 20v2" />
+              <path d="M12 14v2" />
+              <path d="M12 8v2" />
+              <path d="M12 2v2" />
+            </svg>
+            Espelhar
+          </button>
         </div>
       </div>
     </div>

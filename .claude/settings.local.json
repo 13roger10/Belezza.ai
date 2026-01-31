@@ -7,7 +7,23 @@
       "Bash(dir:*)",
       "Bash(node scripts/generate-icons.mjs:*)",
       "Bash(npx tsc:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 8 /nobreak)",
+      "Bash(ping:*)",
+      "Bash(where:*)",
+      "Bash(nvm list:*)",
+      "Bash(nvm install:*)",
+      "Bash(nvm use:*)",
+      "Bash(\"C:\\\\nvm4w\\\\v22.22.0\\\\node.exe\" node_modulesnextdistbinnext dev -p 3002)",
+      "Bash(cmd /c \"dir C:\\\\nvm4w\")",
+      "Bash(cmd /c \"where nvm\")",
+      "Bash(cmd /c \"nvm use 22.22.0 && node -v\")",
+      "Bash(echo:*)",
+      "Bash(\"$NVM_HOME/v22.22.0/node.exe\" -v)",
+      "Bash(\"$NVM_HOME/v22.22.0/node.exe\" node_modules/next/dist/bin/next dev -p 3002)",
+      "Bash(\"$NVM_HOME/v22.22.0/npx.cmd\" tsc --noEmit --project \"c:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\")"
     ]
   }
 }
