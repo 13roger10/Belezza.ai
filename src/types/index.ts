@@ -310,3 +310,66 @@ export interface ManualEditingState {
   stickerOverlays: StickerOverlay[];
   selectedStickerId: string | null;
 }
+
+// ===== Text Editing Types (Fase 10) =====
+
+export interface EmojiCategory {
+  id: string;
+  name: string;
+  icon: string;
+  emojis: string[];
+}
+
+export interface HashtagSuggestion {
+  tag: string;
+  popularity: 'low' | 'medium' | 'high';
+  category?: string;
+}
+
+export interface TextTemplate {
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+  category: 'cta' | 'greeting' | 'promo' | 'bio' | 'booking' | 'general';
+  variables?: string[];
+}
+
+export interface PostPreviewData {
+  imageUrl: string;
+  caption: string;
+  hashtags: string[];
+  platform: 'instagram' | 'facebook';
+  username?: string;
+  avatarUrl?: string;
+}
+
+export interface PlatformLimits {
+  maxCaptionLength: number;
+  maxHashtags: number;
+  recommendedHashtags: number;
+  maxTitleLength?: number;
+}
+
+export const PLATFORM_LIMITS: Record<'instagram' | 'facebook', PlatformLimits> = {
+  instagram: {
+    maxCaptionLength: 2200,
+    maxHashtags: 30,
+    recommendedHashtags: 5,
+  },
+  facebook: {
+    maxCaptionLength: 63206,
+    maxHashtags: 30,
+    recommendedHashtags: 3,
+  },
+};
+
+export interface CaptionEditorState {
+  text: string;
+  hashtags: string[];
+  cursorPosition: number;
+  selectedText: string;
+  charCount: number;
+  wordCount: number;
+  hashtagCount: number;
+}
