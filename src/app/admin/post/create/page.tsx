@@ -57,7 +57,6 @@ export default function CreatePostPage() {
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("");
   const [platform, setPlatform] = useState<Platform>("both");
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Carregar imagem da sessao
@@ -68,6 +67,24 @@ export default function CreatePostPage() {
     } else {
       warning("Nenhuma imagem", "Selecione e edite uma imagem primeiro");
       router.push("/admin/capture");
+    }
+
+    // Carregar legenda gerada pela IA (se existir)
+    const storedCaption = sessionStorage.getItem("generatedCaption");
+    if (storedCaption) {
+      try {
+        const captionData = JSON.parse(storedCaption);
+        if (captionData.text) {
+          setCaption(captionData.text);
+        }
+        if (captionData.hashtags && Array.isArray(captionData.hashtags)) {
+          setHashtags(captionData.hashtags.join(" "));
+        }
+        // Limpar após carregar
+        sessionStorage.removeItem("generatedCaption");
+      } catch {
+        // Ignora erro de parse
+      }
     }
   }, [router, warning]);
 
@@ -92,17 +109,11 @@ export default function CreatePostPage() {
     }
   }, [imageData, retry]);
 
-  // Gerar legenda com IA (mock)
-  const handleGenerateCaption = async () => {
-    setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setCaption(
-      "Transforme seu dia com criatividade!\n\nCada momento e uma oportunidade de criar algo incrivel."
-    );
-    setHashtags("#creativity #socialstudio #ia #design #art");
-    setIsGenerating(false);
-    success("Legenda gerada!", "A IA criou uma sugestao de legenda");
-  };
+  // Redirecionar para página de geração de legenda com IA
+  const handleGenerateCaption = useCallback(() => {
+    // A imagem editada já está em sessionStorage
+    router.push("/admin/caption");
+  }, [router]);
 
   // Extrair hashtags do texto
   const parseHashtags = (text: string): string[] => {
@@ -269,8 +280,6 @@ export default function CreatePostPage() {
               variant="ghost"
               size="sm"
               onClick={handleGenerateCaption}
-              isLoading={isGenerating}
-              disabled={isGenerating}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -282,14 +291,9 @@ export default function CreatePostPage() {
                 strokeLinejoin="round"
                 className="mr-2 h-4 w-4"
               >
-                <path d="M12 3v6" />
-                <circle cx="12" cy="12" r="1" />
-                <path d="M17.5 17.5 12 12" />
-                <path d="M6.5 17.5 12 12" />
-                <path d="M3 12h6" />
-                <path d="M15 12h6" />
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              {isGenerating ? "Gerando..." : "Gerar com IA"}
+              Gerar com IA
             </Button>
           </div>
           <textarea

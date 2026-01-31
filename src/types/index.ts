@@ -168,6 +168,72 @@ export interface AICaptionResult {
   language: string;
 }
 
+// ===== AI Caption Generation Types (Fase 9) =====
+
+export type CaptionTone =
+  | 'professional'
+  | 'casual'
+  | 'fun'
+  | 'elegant'
+  | 'inspirational'
+  | 'promotional'
+  | 'educational';
+
+export type CaptionLength = 'short' | 'medium' | 'long';
+
+export type ContentCategory =
+  | 'beauty'
+  | 'hair'
+  | 'nails'
+  | 'skincare'
+  | 'makeup'
+  | 'wellness'
+  | 'promotion'
+  | 'before_after'
+  | 'tutorial'
+  | 'testimonial';
+
+export interface CaptionGenerationOptions {
+  tone: CaptionTone;
+  length: CaptionLength;
+  category: ContentCategory;
+  platform: 'instagram' | 'facebook' | 'both';
+  includeEmoji: boolean;
+  includeCallToAction: boolean;
+  keywords?: string[];
+  businessName?: string;
+  targetAudience?: string;
+  language: 'pt-BR' | 'en-US' | 'es';
+}
+
+export interface GeneratedCaption {
+  id: string;
+  text: string;
+  hashtags: string[];
+  characterCount: number;
+  estimatedEngagement: 'low' | 'medium' | 'high';
+  tone: CaptionTone;
+}
+
+export interface CaptionGenerationResult {
+  mainCaption: GeneratedCaption;
+  alternatives: GeneratedCaption[];
+  suggestedHashtags: string[];
+  suggestedEmojis: string[];
+  tips: string[];
+  generatedAt: number;
+}
+
+export interface CaptionTemplate {
+  id: string;
+  name: string;
+  description: string;
+  template: string;
+  category: ContentCategory;
+  tone: CaptionTone;
+  variables: string[];
+}
+
 // ===== Manual Editing Types (Fase 8) =====
 
 export interface CropArea {

@@ -290,8 +290,8 @@ export default function EditorPage() {
     } else {
       sessionStorage.setItem("editedImage", editor.currentImage);
     }
-    success("Imagem salva", "Continuando para criar post...");
-    router.push("/admin/post/create");
+    success("Imagem salva", "Continuando para gerar legenda...");
+    router.push("/admin/caption");
   }, [editor, router, success]);
 
   const handleToolSelect = useCallback(
