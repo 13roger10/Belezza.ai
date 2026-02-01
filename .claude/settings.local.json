@@ -23,7 +23,8 @@
       "Bash(echo:*)",
       "Bash(\"$NVM_HOME/v22.22.0/node.exe\" -v)",
       "Bash(\"$NVM_HOME/v22.22.0/node.exe\" node_modules/next/dist/bin/next dev -p 3002)",
-      "Bash(\"$NVM_HOME/v22.22.0/npx.cmd\" tsc --noEmit --project \"c:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\")"
+      "Bash(\"$NVM_HOME/v22.22.0/npx.cmd\" tsc --noEmit --project \"c:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\")",
+      "Bash(npx next build)"
     ]
   }
 }

@@ -123,6 +123,21 @@ export default function CreatePostPage() {
     router.push("/admin/caption");
   }, [router]);
 
+  // Ir para pagina de preview avancado
+  const handleGoToPreview = useCallback(() => {
+    // Salvar dados do post no sessionStorage
+    const postData = {
+      imageData,
+      uploadedImage,
+      title,
+      caption,
+      hashtags,
+      platform,
+    };
+    sessionStorage.setItem("previewPostData", JSON.stringify(postData));
+    router.push("/admin/preview");
+  }, [imageData, uploadedImage, title, caption, hashtags, platform, router]);
+
   // Inserir template na legenda
   const handleInsertTemplate = useCallback((text: string) => {
     setCaption((prev) => prev + text);
@@ -521,6 +536,19 @@ export default function CreatePostPage() {
               hashtags={hashtags}
               platform={platform === "both" ? "instagram" : platform}
             />
+
+            {/* Link to Full Preview */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={handleGoToPreview}
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-2 text-sm font-medium text-white transition-all hover:from-violet-600 hover:to-purple-600"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                </svg>
+                Ver Preview em Instagram e Facebook
+              </button>
+            </div>
 
             {/* Actions in Preview Mode */}
             <div className="mt-6 flex gap-3">
