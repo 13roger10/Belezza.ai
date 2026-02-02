@@ -32,7 +32,13 @@
       "Bash(powershell:*)",
       "Bash(ls:*)",
       "Bash(npm test:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(vercel link:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(vercel pull:*)",
+      "Bash(vercel build:*)",
+      "Bash(vercel deploy --prod --token=zdd0peVMczITxt7K6rzrfPOZ)"
     ]
   }
 }
