@@ -151,9 +151,10 @@ export const monitoring = new Monitoring();
 // Error boundary helper for React components
 export function withErrorBoundary<T extends object>(
   Component: React.ComponentType<T>,
-  fallback?: React.ReactNode
+  _fallback?: React.ReactNode
 ): React.ComponentType<T> {
   // This would wrap with Sentry.ErrorBoundary when Sentry is installed
+  // _fallback is reserved for future Sentry integration
   return Component;
 }
 

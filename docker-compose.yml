@@ -17,20 +17,9 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
-      - API_SECRET_KEY=${API_SECRET_KEY}
-      - IMAGE_AI_API_URL=${IMAGE_AI_API_URL}
-      - IMAGE_AI_API_KEY=${IMAGE_AI_API_KEY}
-      - TEXT_AI_API_URL=${TEXT_AI_API_URL}
-      - TEXT_AI_API_KEY=${TEXT_AI_API_KEY}
-      - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
-      - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
-      - FACEBOOK_ACCESS_TOKEN=${FACEBOOK_ACCESS_TOKEN}
-      - INSTAGRAM_BUSINESS_ACCOUNT_ID=${INSTAGRAM_BUSINESS_ACCOUNT_ID}
-      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
       - SENTRY_DSN=${SENTRY_DSN}
+    env_file:
+      - .env.local
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -39,12 +28,28 @@ services:
       start_period: 10s
     networks:
       - social-studio-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: social-studio-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    networks:
+      - social-studio-network
+    profiles:
+      - with-nginx
 
 networks:
   social-studio-network:
     driver: bridge
+
+volumes:
+  app-data:

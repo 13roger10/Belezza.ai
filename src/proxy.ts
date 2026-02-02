@@ -4,8 +4,26 @@ import type { NextRequest } from "next/server";
 // Rotas que requerem autenticação
 const protectedRoutes = ["/admin"];
 
-// Rotas públicas (não requerem autenticação)
-const publicRoutes = ["/", "/login"];
+// Security headers for production
+const securityHeaders = {
+  "X-DNS-Prefetch-Control": "on",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  "X-XSS-Protection": "1; mode=block",
+  "X-Frame-Options": "SAMEORIGIN",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
+function addSecurityHeaders(response: NextResponse): NextResponse {
+  // Only add security headers in production
+  if (process.env.NODE_ENV === "production") {
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+  }
+  return response;
+}
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,11 +31,6 @@ export default function proxy(request: NextRequest) {
   // Verificar se é uma rota protegida
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
-  );
-
-  // Verificar se é uma rota pública
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith("/api/")
   );
 
   // Se for uma rota protegida, verificar autenticação
@@ -28,7 +41,7 @@ export default function proxy(request: NextRequest) {
     if (!token) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
+      return addSecurityHeaders(NextResponse.redirect(loginUrl));
     }
   }
 
@@ -37,11 +50,11 @@ export default function proxy(request: NextRequest) {
     const token = request.cookies.get("auth_token")?.value;
 
     if (token) {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      return addSecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)));
     }
   }
 
-  return NextResponse.next();
+  return addSecurityHeaders(NextResponse.next());
 }
 
 export const config = {
