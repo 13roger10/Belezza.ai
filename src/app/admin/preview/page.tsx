@@ -7,6 +7,7 @@ import { AdminLayout } from "@/components/layout";
 import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { PreviewComparison } from "@/components/preview";
+import { ScheduleModal } from "@/components/schedule";
 import { postService } from "@/services/post";
 import type { UploadResult } from "@/services/upload";
 
@@ -28,6 +29,8 @@ export default function PreviewPage() {
   const [postData, setPostData] = useState<PostData | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Carregar dados do post da sessao
   useEffect(() => {
@@ -168,6 +171,55 @@ export default function PreviewPage() {
     }
   };
 
+  // Agendar post
+  const handleSchedule = async (scheduledDate: Date) => {
+    if (!postData) return;
+
+    if (!postData.uploadedImage) {
+      warning("Upload pendente", "A imagem ainda nao foi enviada");
+      return;
+    }
+
+    if (!postData.title?.trim()) {
+      warning("Titulo obrigatorio", "Volte e adicione um titulo para o post");
+      return;
+    }
+
+    setIsScheduling(true);
+
+    try {
+      const post = await postService.createPost({
+        imageUrl: postData.uploadedImage.url,
+        thumbnailUrl: postData.uploadedImage.thumbnailUrl,
+        title: postData.title,
+        caption: postData.caption,
+        hashtags: postData.hashtags,
+        platform: postData.platform,
+        status: "draft",
+      });
+
+      await postService.schedulePost(post.id, scheduledDate);
+
+      success("Agendado!", "Seu post foi agendado com sucesso");
+
+      // Limpar session storage
+      sessionStorage.removeItem("previewPostData");
+      sessionStorage.removeItem("capturedImage");
+      sessionStorage.removeItem("editedImage");
+      sessionStorage.removeItem("generatedCaption");
+
+      setShowScheduleModal(false);
+      router.push("/admin/schedule");
+    } catch (err) {
+      showError(
+        "Erro ao agendar",
+        err instanceof Error ? err.message : "Tente novamente"
+      );
+    } finally {
+      setIsScheduling(false);
+    }
+  };
+
   if (!postData) {
     return (
       <AdminLayout title="Preview">
@@ -290,11 +342,11 @@ export default function PreviewPage() {
             Voltar e Editar
           </Button>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
               onClick={handleSaveDraft}
-              disabled={!postData.uploadedImage || isSaving || isPublishing}
+              disabled={!postData.uploadedImage || isSaving || isPublishing || isScheduling}
               isLoading={isSaving}
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -303,8 +355,19 @@ export default function PreviewPage() {
               Salvar Rascunho
             </Button>
             <Button
+              variant="outline"
+              onClick={() => setShowScheduleModal(true)}
+              disabled={!postData.uploadedImage || isSaving || isPublishing || isScheduling}
+              className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+            >
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Agendar
+            </Button>
+            <Button
               onClick={handlePublish}
-              disabled={!postData.uploadedImage || isSaving || isPublishing}
+              disabled={!postData.uploadedImage || isSaving || isPublishing || isScheduling}
               isLoading={isPublishing}
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -315,6 +378,15 @@ export default function PreviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        onSchedule={handleSchedule}
+        isLoading={isScheduling}
+        platform={postData.platform}
+      />
     </AdminLayout>
   );
 }

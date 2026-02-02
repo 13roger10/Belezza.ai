@@ -1,0 +1,320 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { AdminLayout } from "@/components/layout";
+import { Button } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { ScheduleCalendar, ScheduleModal } from "@/components/schedule";
+import { postService } from "@/services/post";
+import type { Post } from "@/types";
+
+export default function SchedulePage() {
+  const { success, error: showError, warning } = useToast();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+
+  // Carregar posts
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  const loadPosts = async () => {
+    setIsLoading(true);
+    try {
+      const result = await postService.listPosts();
+      setPosts(result.posts);
+    } catch (err) {
+      showError(
+        "Erro ao carregar",
+        err instanceof Error ? err.message : "Tente novamente"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cancelar agendamento (voltar para rascunho)
+  const handleCancelSchedule = useCallback(async (post: Post) => {
+    if (!confirm("Tem certeza que deseja cancelar o agendamento? O post voltara para rascunhos.")) {
+      return;
+    }
+
+    try {
+      const updated = await postService.updatePost({
+        id: post.id,
+        status: "draft",
+        scheduledAt: undefined,
+      });
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? updated : p)));
+      success("Agendamento cancelado", "O post voltou para rascunhos");
+    } catch (err) {
+      showError(
+        "Erro ao cancelar",
+        err instanceof Error ? err.message : "Tente novamente"
+      );
+    }
+  }, [success, showError]);
+
+  // Publicar agora
+  const handlePublishNow = useCallback(async (post: Post) => {
+    if (!confirm("Tem certeza que deseja publicar este post agora?")) {
+      return;
+    }
+
+    try {
+      const updated = await postService.publishPost(post.id);
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? updated : p)));
+      success("Post publicado!", "Seu post foi publicado com sucesso");
+    } catch (err) {
+      showError(
+        "Erro ao publicar",
+        err instanceof Error ? err.message : "Tente novamente"
+      );
+    }
+  }, [success, showError]);
+
+  // Abrir modal de reagendamento
+  const handleReschedule = useCallback((post: Post) => {
+    setSelectedPost(post);
+    setShowRescheduleModal(true);
+  }, []);
+
+  // Confirmar reagendamento
+  const handleConfirmReschedule = useCallback(async (date: Date) => {
+    if (!selectedPost) return;
+
+    setIsRescheduling(true);
+    try {
+      const updated = await postService.schedulePost(selectedPost.id, date);
+      setPosts((prev) => prev.map((p) => (p.id === selectedPost.id ? updated : p)));
+      success("Post reagendado!", "A nova data foi definida com sucesso");
+      setShowRescheduleModal(false);
+      setSelectedPost(null);
+    } catch (err) {
+      showError(
+        "Erro ao reagendar",
+        err instanceof Error ? err.message : "Tente novamente"
+      );
+    } finally {
+      setIsRescheduling(false);
+    }
+  }, [selectedPost, success, showError]);
+
+  // Contagens
+  const scheduledCount = posts.filter((p) => p.status === "scheduled").length;
+  const draftCount = posts.filter((p) => p.status === "draft").length;
+  const publishedCount = posts.filter((p) => p.status === "published").length;
+
+  // Posts agendados para as proximas 24h
+  const upcomingPosts = posts.filter((p) => {
+    if (p.status !== "scheduled" || !p.scheduledAt) return false;
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const scheduledDate = new Date(p.scheduledAt);
+    return scheduledDate >= now && scheduledDate <= tomorrow;
+  });
+
+  return (
+    <AdminLayout title="Agendamentos">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Agendamentos</h1>
+            <p className="mt-1 text-gray-500">
+              Gerencie seus posts agendados e visualize o calendario de publicacoes
+            </p>
+          </div>
+          <Link href="/admin/capture">
+            <Button>
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Novo Post
+            </Button>
+          </Link>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{scheduledCount}</p>
+                <p className="text-sm text-gray-500">Posts Agendados</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100">
+                <svg className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{draftCount}</p>
+                <p className="text-sm text-gray-500">Rascunhos</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{publishedCount}</p>
+                <p className="text-sm text-gray-500">Publicados</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Upcoming Posts Alert */}
+        {upcomingPosts.length > 0 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-200">
+                <svg className="h-4 w-4 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-amber-900">Proximos Posts</h4>
+                <p className="mt-1 text-sm text-amber-700">
+                  Voce tem {upcomingPosts.length} post{upcomingPosts.length > 1 ? "s" : ""} agendado{upcomingPosts.length > 1 ? "s" : ""} para as proximas 24 horas
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {upcomingPosts.slice(0, 3).map((post) => (
+                    <span
+                      key={post.id}
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-200 px-2 py-1 text-xs font-medium text-amber-800"
+                    >
+                      {post.scheduledAt && new Intl.DateTimeFormat("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(new Date(post.scheduledAt))}
+                      {" - "}
+                      {post.title.substring(0, 15)}...
+                    </span>
+                  ))}
+                  {upcomingPosts.length > 3 && (
+                    <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700">
+                      +{upcomingPosts.length - 3} mais
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+              <p className="text-gray-500">Carregando agendamentos...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Calendar */}
+        {!isLoading && (
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <ScheduleCalendar
+              posts={posts}
+              onReschedule={handleReschedule}
+              onCancelSchedule={handleCancelSchedule}
+              onPublishNow={handlePublishNow}
+            />
+          </div>
+        )}
+
+        {/* Tips */}
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <div className="flex items-start gap-3">
+            <svg className="h-5 w-5 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <div>
+              <h4 className="font-semibold text-blue-900">Dicas de Agendamento</h4>
+              <ul className="mt-2 space-y-1 text-sm text-blue-700">
+                <li>• Melhores horarios para Instagram: 11h-13h e 19h-21h</li>
+                <li>• Melhores horarios para Facebook: 9h-10h e 13h-14h</li>
+                <li>• Mantenha uma frequencia consistente de postagens</li>
+                <li>• Evite postar mais de 3 vezes por dia na mesma plataforma</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link href="/admin/posts">
+            <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100">
+                <svg className="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Ver Todos os Posts</h3>
+                <p className="text-sm text-gray-500">Gerencie rascunhos e publicados</p>
+              </div>
+              <svg className="ml-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          <Link href="/admin/capture">
+            <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Criar Novo Post</h3>
+                <p className="text-sm text-gray-500">Capture e edite uma nova imagem</p>
+              </div>
+              <svg className="ml-auto h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Reschedule Modal */}
+      <ScheduleModal
+        isOpen={showRescheduleModal}
+        onClose={() => {
+          setShowRescheduleModal(false);
+          setSelectedPost(null);
+        }}
+        onSchedule={handleConfirmReschedule}
+        isLoading={isRescheduling}
+        initialDate={selectedPost?.scheduledAt ? new Date(selectedPost.scheduledAt) : undefined}
+        platform={selectedPost?.platform}
+      />
+    </AdminLayout>
+  );
+}

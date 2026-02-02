@@ -272,6 +272,54 @@ export const postService = {
     return response.data;
   },
 
+  // Cancelar agendamento (voltar para rascunho)
+  async cancelSchedule(id: string): Promise<Post> {
+    if (isDev) {
+      await simulateNetworkDelay();
+
+      const posts = getStoredPosts();
+      const index = posts.findIndex((p) => p.id === id);
+
+      if (index === -1) {
+        throw new Error("Post não encontrado");
+      }
+
+      const updatedPost: Post = {
+        ...posts[index],
+        status: "draft",
+        scheduledAt: undefined,
+        updatedAt: new Date(),
+      };
+
+      posts[index] = updatedPost;
+      saveStoredPosts(posts);
+
+      return updatedPost;
+    }
+
+    const response = await api.post<Post>(`/posts/${id}/cancel-schedule`);
+    return response.data;
+  },
+
+  // Listar posts agendados
+  async listScheduledPosts(): Promise<{ posts: Post[]; total: number }> {
+    return this.listPosts({ status: "scheduled" });
+  },
+
+  // Obter proximos posts agendados (proximas 24h)
+  async getUpcomingPosts(): Promise<Post[]> {
+    const { posts } = await this.listScheduledPosts();
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return posts.filter((post) => {
+      if (!post.scheduledAt) return false;
+      const scheduledDate = new Date(post.scheduledAt);
+      return scheduledDate >= now && scheduledDate <= tomorrow;
+    });
+  },
+
   // Duplicar post
   async duplicatePost(id: string): Promise<Post> {
     if (isDev) {
