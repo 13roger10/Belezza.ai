@@ -49,7 +49,7 @@ export function useImageEditor(initialImage: string) {
   const [flipV, setFlipV] = useState<boolean>(false);
 
   // Histórico para undo/redo
-  const [history, setHistory] = useState<EditingHistoryEntry[]>([
+  const [history, setHistory] = useState<EditingHistoryEntry[]>(() => [
     {
       id: generateId(),
       timestamp: Date.now(),

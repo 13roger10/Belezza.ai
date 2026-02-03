@@ -11,10 +11,10 @@ interface LoginRequest {
   password: string;
 }
 
-// Credenciais de administrador para desenvolvimento
+// Credenciais de administrador (usar variáveis de ambiente em produção)
 const ADMIN_CREDENTIALS = {
-  email: "admin@socialstudio.com",
-  password: "Admin@123",
+  email: process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@socialstudio.com",
+  password: process.env.ADMIN_PASSWORD || "Admin@2024!Secure",
 };
 
 // Usuário mock para desenvolvimento
@@ -38,8 +38,11 @@ const generateMockToken = () => {
   return btoa(JSON.stringify(payload));
 };
 
-// Verificar se está em modo desenvolvimento
-const isDev = process.env.NODE_ENV === "development";
+// Verificar se deve usar autenticação mock (sem backend)
+// Em produção, usar API real quando disponível
+const useMockAuth = process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true" ||
+                    process.env.NODE_ENV === "development" ||
+                    !process.env.NEXT_PUBLIC_API_URL;
 
 // Função para definir cookie de autenticação
 const setAuthCookie = (token: string) => {
@@ -61,7 +64,7 @@ const removeAuthCookie = () => {
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponse> {
     // Em desenvolvimento, verificar credenciais mock
-    if (isDev) {
+    if (useMockAuth) {
       // Simular delay de rede
       await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -92,7 +95,7 @@ export const authService = {
 
   async verifyToken(token: string): Promise<boolean> {
     // Em desenvolvimento, verificar token mock
-    if (isDev) {
+    if (useMockAuth) {
       try {
         const payload = JSON.parse(atob(token));
         return payload.exp > Date.now();
@@ -116,7 +119,7 @@ export const authService = {
 
   async getProfile(token: string): Promise<User> {
     // Em desenvolvimento, retornar usuário mock
-    if (isDev) {
+    if (useMockAuth) {
       const isValid = await this.verifyToken(token);
       if (isValid) {
         return MOCK_ADMIN_USER;
@@ -136,7 +139,7 @@ export const authService = {
 
   async refreshToken(token: string): Promise<LoginResponse> {
     // Em desenvolvimento, gerar novo token mock
-    if (isDev) {
+    if (useMockAuth) {
       const isValid = await this.verifyToken(token);
       if (isValid) {
         const newToken = generateMockToken();

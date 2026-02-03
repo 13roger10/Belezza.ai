@@ -5,9 +5,7 @@ import type {
   CaptionGenerationOptions,
   CaptionGenerationResult,
   GeneratedCaption,
-  CaptionTone,
   CaptionLength,
-  ContentCategory,
 } from "@/types";
 import { getAllCategories, getAllTones } from "@/services/caption-ai";
 

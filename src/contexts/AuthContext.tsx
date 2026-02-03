@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { authService } from "@/services/auth";
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     isLoading: true,
   });
+  const hasInitialized = useRef(false);
 
   const setAuth = useCallback((user: User | null, token: string | null) => {
     setState({
@@ -102,8 +104,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setAuth]);
 
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
     checkAuth();
-  }, [checkAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AuthContext.Provider

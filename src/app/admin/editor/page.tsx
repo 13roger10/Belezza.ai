@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, ReactNode, useRef } from "react";
+import { useState, useEffect, useCallback, ReactNode, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui";
@@ -17,7 +17,7 @@ import {
   DrawingPanel,
   StickerPanel,
 } from "@/components/editor";
-import type { EditorTool as EditorToolType, TextOverlayConfig, StickerOverlay } from "@/types";
+import type { EditorTool as EditorToolType } from "@/types";
 
 interface Tool {
   id: EditorToolType;
@@ -234,13 +234,19 @@ const filters = [
 export default function EditorPage() {
   const router = useRouter();
   const { warning, success } = useToast();
-  const [initialImage, setInitialImage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [initialImage, setInitialImage] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("capturedImage");
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("none");
   const [showAIPanel, setShowAIPanel] = useState<
     "enhance" | "background" | "style" | null
   >(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const hasCheckedImage = useRef(false);
 
   // Estado de ajustes
   const [brightness, setBrightness] = useState(100);
@@ -257,26 +263,41 @@ export default function EditorPage() {
     initialY: number;
   } | null>(null);
 
+  // Container scale for overlays (updated via effect, not during render)
+  const [containerScale, setContainerScale] = useState(1);
+
   useEffect(() => {
-    const storedImage = sessionStorage.getItem("capturedImage");
-    if (storedImage) {
-      setInitialImage(storedImage);
-    } else {
+    if (hasCheckedImage.current) return;
+    hasCheckedImage.current = true;
+    if (!initialImage) {
       warning("Nenhuma imagem", "Selecione uma imagem primeiro");
       router.push("/admin/capture");
     }
-    setIsLoading(false);
-  }, [router, warning]);
+  }, [initialImage, router, warning]);
 
   // Hook do editor (só inicializa quando temos imagem)
   const editor = useImageEditor(initialImage || "");
 
   // Load image dimensions when image changes
+  const { currentImage, loadImageDimensions, imageDimensions } = editor;
   useEffect(() => {
-    if (editor.currentImage) {
-      editor.loadImageDimensions(editor.currentImage);
+    if (currentImage) {
+      loadImageDimensions(currentImage);
     }
-  }, [editor.currentImage, editor.loadImageDimensions]);
+  }, [currentImage, loadImageDimensions]);
+
+  // Update container scale when dimensions change
+  useEffect(() => {
+    const updateScale = () => {
+      if (imageContainerRef.current && imageDimensions.width > 0) {
+        const scale = imageContainerRef.current.clientWidth / imageDimensions.width;
+        setContainerScale(scale);
+      }
+    };
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, [imageDimensions.width]);
 
   const handleBack = useCallback(() => {
     router.push("/admin/capture");
@@ -410,13 +431,9 @@ export default function EditorPage() {
     setDraggedOverlay(null);
   }, []);
 
-  // Render text overlay
-  const renderTextOverlay = (text: TextOverlayConfig) => {
-    const scale = imageContainerRef.current
-      ? imageContainerRef.current.clientWidth / editor.imageDimensions.width
-      : 1;
-
-    return (
+  // Render text overlays using memoized components
+  const textOverlayElements = useMemo(() => {
+    return editor.textOverlays.map((text) => (
       <div
         key={text.id}
         className={`absolute cursor-move select-none ${
@@ -425,9 +442,9 @@ export default function EditorPage() {
             : ""
         }`}
         style={{
-          left: text.x * scale,
-          top: text.y * scale,
-          fontSize: text.fontSize * scale,
+          left: text.x * containerScale,
+          top: text.y * containerScale,
+          fontSize: text.fontSize * containerScale,
           fontFamily: text.fontFamily,
           fontWeight: text.fontWeight,
           fontStyle: text.fontStyle,
@@ -447,16 +464,12 @@ export default function EditorPage() {
       >
         {text.text}
       </div>
-    );
-  };
+    ));
+  }, [editor.textOverlays, editor.selectedTextId, containerScale, handleOverlayMouseDown]);
 
-  // Render sticker overlay
-  const renderStickerOverlay = (sticker: StickerOverlay) => {
-    const scale = imageContainerRef.current
-      ? imageContainerRef.current.clientWidth / editor.imageDimensions.width
-      : 1;
-
-    return (
+  // Render sticker overlays using memoized components
+  const stickerOverlayElements = useMemo(() => {
+    return editor.stickerOverlays.map((sticker) => (
       <div
         key={sticker.id}
         className={`absolute cursor-move select-none ${
@@ -465,11 +478,11 @@ export default function EditorPage() {
             : ""
         }`}
         style={{
-          left: sticker.x * scale,
-          top: sticker.y * scale,
-          width: sticker.width * scale,
-          height: sticker.height * scale,
-          fontSize: sticker.height * scale * 0.8,
+          left: sticker.x * containerScale,
+          top: sticker.y * containerScale,
+          width: sticker.width * containerScale,
+          height: sticker.height * containerScale,
+          fontSize: sticker.height * containerScale * 0.8,
           opacity: sticker.opacity,
           transform: `rotate(${sticker.rotation}deg) ${
             sticker.flipH ? "scaleX(-1)" : ""
@@ -484,8 +497,8 @@ export default function EditorPage() {
       >
         {sticker.src}
       </div>
-    );
-  };
+    ));
+  }, [editor.stickerOverlays, editor.selectedStickerId, containerScale, handleOverlayMouseDown]);
 
   if (isLoading) {
     return (
@@ -567,10 +580,10 @@ export default function EditorPage() {
             />
 
             {/* Render Text Overlays */}
-            {editor.textOverlays.map(renderTextOverlay)}
+            {textOverlayElements}
 
             {/* Render Sticker Overlays */}
-            {editor.stickerOverlays.map(renderStickerOverlay)}
+            {stickerOverlayElements}
           </div>
         </div>
 

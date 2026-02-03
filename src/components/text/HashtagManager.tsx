@@ -162,8 +162,8 @@ export function HashtagManager({
     }
   };
 
-  // Get popularity icon
-  const getPopularityIcon = (popularity: "low" | "medium" | "high") => {
+  // Get popularity icon - reserved for future use
+  const _getPopularityIcon = (popularity: "low" | "medium" | "high") => {
     const bars = popularity === "high" ? 3 : popularity === "medium" ? 2 : 1;
     return (
       <div className="flex items-end gap-0.5">

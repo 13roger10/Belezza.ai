@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -18,6 +18,7 @@ const THEME_KEY = "social_studio_theme";
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const hasInitialized = useRef(false);
 
   // Detectar preferencia do sistema
   const getSystemTheme = useCallback((): "light" | "dark" => {
@@ -46,11 +47,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Inicializar tema
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
     const stored = localStorage.getItem(THEME_KEY) as Theme | null;
     const initialTheme = stored || "light";
     setThemeState(initialTheme);
     applyTheme(resolveTheme(initialTheme));
-  }, [applyTheme, resolveTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Escutar mudancas na preferencia do sistema
   useEffect(() => {

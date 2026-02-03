@@ -23,7 +23,7 @@ export function RichCaptionEditor({
   onGenerateWithAI,
 }: RichCaptionEditorProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState(0);
+  const [_cursorPosition, setCursorPosition] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 

@@ -40,11 +40,7 @@ export default function PostsPage() {
   const [isScheduling, setIsScheduling] = useState(false);
 
   // Carregar posts
-  useEffect(() => {
-    loadPosts();
-  }, [filter]);
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await postService.listPosts(
@@ -59,7 +55,11 @@ export default function PostsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter, showError]);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este post?")) return;

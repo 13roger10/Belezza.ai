@@ -10,7 +10,7 @@ import { postService } from "@/services/post";
 import type { Post } from "@/types";
 
 export default function SchedulePage() {
-  const { success, error: showError, warning } = useToast();
+  const { success, error: showError } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -18,11 +18,7 @@ export default function SchedulePage() {
   const [isRescheduling, setIsRescheduling] = useState(false);
 
   // Carregar posts
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await postService.listPosts();
@@ -35,7 +31,11 @@ export default function SchedulePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   // Cancelar agendamento (voltar para rascunho)
   const handleCancelSchedule = useCallback(async (post: Post) => {

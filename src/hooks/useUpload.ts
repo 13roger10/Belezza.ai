@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   uploadService,
   UploadResult,
   UploadProgress as UploadProgressType,
   optimizeImage,
-  createThumbnail,
   getImageDimensions,
   base64ToBlob,
 } from "@/services/upload";
@@ -65,7 +64,13 @@ const initialState: UploadState = {
 };
 
 export function useUpload(options: UseUploadOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  // Merge options with defaults using ref to avoid stale closures
+  const optsRef = useRef({ ...DEFAULT_OPTIONS, ...options });
+
+  // Update ref in effect to avoid updating during render
+  useEffect(() => {
+    optsRef.current = { ...DEFAULT_OPTIONS, ...options };
+  });
   const [state, setState] = useState<UploadState>(initialState);
   const abortControllerRef = useRef<AbortController | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -104,25 +109,25 @@ export function useUpload(options: UseUploadOptions = {}) {
       }
 
       // Validar tipo
-      if (opts.allowedTypes && !opts.allowedTypes.includes(file.type)) {
+      if (optsRef.current.allowedTypes && !optsRef.current.allowedTypes.includes(file.type)) {
         return {
           valid: false,
-          error: `Tipo de arquivo nao permitido. Use: ${opts.allowedTypes.join(", ")}`,
+          error: `Tipo de arquivo nao permitido. Use: ${optsRef.current.allowedTypes.join(", ")}`,
         };
       }
 
       // Validar tamanho
-      const maxBytes = (opts.maxSizeMB || 10) * 1024 * 1024;
+      const maxBytes = (optsRef.current.maxSizeMB || 10) * 1024 * 1024;
       if (file.size > maxBytes) {
         return {
           valid: false,
-          error: `Arquivo muito grande. Maximo: ${opts.maxSizeMB}MB`,
+          error: `Arquivo muito grande. Maximo: ${optsRef.current.maxSizeMB}MB`,
         };
       }
 
       return { valid: true };
     },
-    [opts.allowedTypes, opts.maxSizeMB]
+    []
   );
 
   // Converter File para base64
@@ -176,7 +181,7 @@ export function useUpload(options: UseUploadOptions = {}) {
             phase: "error",
             error: validation.error || "Arquivo invalido",
           }));
-          opts.onError?.(new Error(validation.error));
+          optsRef.current.onError?.(new Error(validation.error));
           return null;
         }
 
@@ -196,16 +201,16 @@ export function useUpload(options: UseUploadOptions = {}) {
         }));
 
         let processedImage = imageData;
-        if (opts.autoOptimize) {
+        if (optsRef.current.autoOptimize) {
           processedImage = await optimizeImage(imageData, {
-            maxWidth: opts.maxWidth,
-            maxHeight: opts.maxHeight,
-            quality: opts.quality,
+            maxWidth: optsRef.current.maxWidth,
+            maxHeight: optsRef.current.maxHeight,
+            quality: optsRef.current.quality,
           });
         }
 
-        // Obter dimensoes
-        const dimensions = await getImageDimensions(processedImage);
+        // Obter dimensoes (para validação futura se necessário)
+        await getImageDimensions(processedImage);
 
         setState((prev) => ({
           ...prev,
@@ -232,7 +237,7 @@ export function useUpload(options: UseUploadOptions = {}) {
               estimatedTimeRemaining: estimatedTime,
             }));
 
-            opts.onProgress?.(progress);
+            optsRef.current.onProgress?.(progress);
           },
           optimize: false, // Ja otimizamos acima
         });
@@ -259,7 +264,7 @@ export function useUpload(options: UseUploadOptions = {}) {
           estimatedTimeRemaining: null,
         });
 
-        opts.onComplete?.(result);
+        optsRef.current.onComplete?.(result);
         return result;
       } catch (error) {
         const errorMessage =
@@ -271,7 +276,7 @@ export function useUpload(options: UseUploadOptions = {}) {
           error: errorMessage,
         }));
 
-        opts.onError?.(
+        optsRef.current.onError?.(
           error instanceof Error ? error : new Error(errorMessage)
         );
         return null;
@@ -281,7 +286,6 @@ export function useUpload(options: UseUploadOptions = {}) {
       validateFile,
       fileToBase64,
       calculateEstimatedTime,
-      opts,
     ]
   );
 

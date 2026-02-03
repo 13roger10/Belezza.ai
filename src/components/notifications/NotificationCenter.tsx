@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Bell, X, Check, Clock, Calendar, AlertCircle } from "lucide-react";
 
 export interface Notification {
@@ -44,25 +44,30 @@ const defaultNotifications: Notification[] = [
 
 export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Carregar notificacoes
-  useEffect(() => {
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    if (typeof window === "undefined") return defaultNotifications;
     const stored = localStorage.getItem(NOTIFICATIONS_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setNotifications(
-          parsed.map((n: Notification) => ({
-            ...n,
-            timestamp: new Date(n.timestamp),
-          }))
-        );
+        return parsed.map((n: Notification) => ({
+          ...n,
+          timestamp: new Date(n.timestamp),
+        }));
       } catch {
-        setNotifications(defaultNotifications);
+        return defaultNotifications;
       }
-    } else {
-      setNotifications(defaultNotifications);
+    }
+    return defaultNotifications;
+  });
+  const hasInitialized = useRef(false);
+
+  // Salvar notificacoes iniciais se não existirem
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+    if (!stored) {
       localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(defaultNotifications));
     }
   }, []);

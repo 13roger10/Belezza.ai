@@ -33,7 +33,7 @@ export function ScheduleModal({
   onClose,
   onSchedule,
   isLoading = false,
-  minDate = new Date(),
+  minDate: _minDate = new Date(),
   initialDate,
   platform = "both",
 }: ScheduleModalProps) {

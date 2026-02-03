@@ -6,7 +6,6 @@ import type {
   CaptionGenerationResult,
   GeneratedCaption,
   CaptionTone,
-  CaptionLength,
   ContentCategory,
   CaptionTemplate,
 } from "@/types";

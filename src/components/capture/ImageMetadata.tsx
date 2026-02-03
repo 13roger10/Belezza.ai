@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 interface ImageInfo {
   width: number;
@@ -82,13 +82,16 @@ export function ImageMetadata({
   className = "",
 }: ImageMetadataProps) {
   const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !!imageData);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     if (!imageData) {
-      setIsLoading(false);
       return;
     }
+
+    if (loadingRef.current) return;
+    loadingRef.current = true;
 
     const img = new window.Image();
     img.onload = () => {

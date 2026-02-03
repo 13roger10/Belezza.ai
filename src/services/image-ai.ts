@@ -11,7 +11,8 @@ import type {
   AICaptionResult,
 } from "@/types";
 
-const isDev = process.env.NODE_ENV === "development";
+// Environment check for future API integration
+const _isDev = process.env.NODE_ENV === "development";
 
 // Simula delay de processamento de IA
 const simulateProcessing = (minMs: number, maxMs: number): Promise<void> => {
@@ -595,7 +596,6 @@ function applyArtisticStyle(data: Uint8ClampedArray): void {
     const g = data[i + 1];
     const b = data[i + 2];
 
-    const max = Math.max(r, g, b);
     const avg = (r + g + b) / 3;
     const factor = 1.3;
 
@@ -607,8 +607,8 @@ function applyArtisticStyle(data: Uint8ClampedArray): void {
 
 function applyCartoonStyle(
   data: Uint8ClampedArray,
-  width: number,
-  height: number
+  _width: number,
+  _height: number
 ): void {
   // Posterização para efeito cartoon
   const levels = 5;
