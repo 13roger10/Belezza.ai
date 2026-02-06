@@ -33,53 +33,55 @@
 
 ---
 
-# ETAPA 1 - SETUP DO PROJETO SPRING BOOT
+# ETAPA 1 - SETUP DO PROJETO SPRING BOOT [CONCLUIDA]
 
 ## 1.1 Criacao do Projeto
-- [ ] T1.1.1 - Criar projeto Spring Boot via Spring Initializr (Java 21)
-- [ ] T1.1.2 - Configurar Maven com dependencias iniciais
-- [ ] T1.1.3 - Adicionar spring-boot-starter-web
-- [ ] T1.1.4 - Adicionar spring-boot-starter-data-jpa
-- [ ] T1.1.5 - Adicionar spring-boot-starter-security
-- [ ] T1.1.6 - Adicionar spring-boot-starter-validation
-- [ ] T1.1.7 - Adicionar spring-boot-starter-actuator
-- [ ] T1.1.8 - Adicionar postgresql driver
-- [ ] T1.1.9 - Adicionar lombok e mapstruct
-- [ ] T1.1.10 - Adicionar springdoc-openapi (Swagger)
+- [x] T1.1.1 - Criar projeto Spring Boot via Spring Initializr (Java 21)
+- [x] T1.1.2 - Configurar Maven com dependencias iniciais
+- [x] T1.1.3 - Adicionar spring-boot-starter-web
+- [x] T1.1.4 - Adicionar spring-boot-starter-data-jpa
+- [x] T1.1.5 - Adicionar spring-boot-starter-security
+- [x] T1.1.6 - Adicionar spring-boot-starter-validation
+- [x] T1.1.7 - Adicionar spring-boot-starter-actuator
+- [x] T1.1.8 - Adicionar postgresql driver
+- [x] T1.1.9 - Adicionar lombok e mapstruct
+- [x] T1.1.10 - Adicionar springdoc-openapi (Swagger)
 
 ## 1.2 Estrutura de Pacotes
-- [ ] T1.2.1 - Criar pacote config/
-- [ ] T1.2.2 - Criar pacote controller/
-- [ ] T1.2.3 - Criar pacote service/
-- [ ] T1.2.4 - Criar pacote repository/
-- [ ] T1.2.5 - Criar pacote entity/
-- [ ] T1.2.6 - Criar pacote dto/
-- [ ] T1.2.7 - Criar pacote mapper/
-- [ ] T1.2.8 - Criar pacote exception/
-- [ ] T1.2.9 - Criar pacote security/
-- [ ] T1.2.10 - Criar pacote integration/
-- [ ] T1.2.11 - Criar pacote scheduler/
-- [ ] T1.2.12 - Criar pacote util/
+- [x] T1.2.1 - Criar pacote config/
+- [x] T1.2.2 - Criar pacote controller/
+- [x] T1.2.3 - Criar pacote service/
+- [x] T1.2.4 - Criar pacote repository/
+- [x] T1.2.5 - Criar pacote entity/
+- [x] T1.2.6 - Criar pacote dto/
+- [x] T1.2.7 - Criar pacote mapper/
+- [x] T1.2.8 - Criar pacote exception/
+- [x] T1.2.9 - Criar pacote security/
+- [x] T1.2.10 - Criar pacote integration/
+- [x] T1.2.11 - Criar pacote scheduler/
+- [x] T1.2.12 - Criar pacote util/
 
 ## 1.3 Configuracao de Profiles
-- [ ] T1.3.1 - Criar application.yml (configuracoes comuns)
-- [ ] T1.3.2 - Criar application-dev.yml (desenvolvimento)
-- [ ] T1.3.3 - Criar application-prod.yml (producao)
-- [ ] T1.3.4 - Configurar datasource por profile
-- [ ] T1.3.5 - Configurar niveis de log por profile
+- [x] T1.3.1 - Criar application.yml (configuracoes comuns)
+- [x] T1.3.2 - Criar application-dev.yml (desenvolvimento)
+- [x] T1.3.3 - Criar application-prod.yml (producao)
+- [x] T1.3.4 - Configurar datasource por profile
+- [x] T1.3.5 - Configurar niveis de log por profile
 
 ## 1.4 Logging (Logback)
-- [ ] T1.4.1 - Criar logback-spring.xml
-- [ ] T1.4.2 - Configurar console appender (dev)
-- [ ] T1.4.3 - Configurar file appender com rolling (prod)
-- [ ] T1.4.4 - Definir pattern de log
-- [ ] T1.4.5 - Adicionar MDC para request tracing
+- [x] T1.4.1 - Criar logback-spring.xml
+- [x] T1.4.2 - Configurar console appender (dev)
+- [x] T1.4.3 - Configurar file appender com rolling (prod)
+- [x] T1.4.4 - Definir pattern de log
+- [x] T1.4.5 - Adicionar MDC para request tracing
 
 ## 1.5 Docker
-- [ ] T1.5.1 - Criar Dockerfile multi-stage
-- [ ] T1.5.2 - Criar docker-compose.yml (API + PostgreSQL + Redis)
-- [ ] T1.5.3 - Criar .dockerignore
-- [ ] T1.5.4 - Configurar health check no container
+- [x] T1.5.1 - Criar Dockerfile multi-stage
+- [x] T1.5.2 - Criar docker-compose.yml (API + PostgreSQL + Redis)
+- [x] T1.5.3 - Criar .dockerignore
+- [x] T1.5.4 - Configurar health check no container
+
+> **Documentacao completa em:** [docs/ETAPA-1/](./ETAPA-1/INDEX.md)
 
 ---
 
