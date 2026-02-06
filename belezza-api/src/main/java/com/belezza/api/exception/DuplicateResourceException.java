@@ -18,4 +18,8 @@ public class DuplicateResourceException extends BusinessException {
     public static DuplicateResourceException telefone(String telefone) {
         return new DuplicateResourceException("Telefone já cadastrado: " + telefone);
     }
+
+    public DuplicateResourceException(String resource, String field, String value) {
+        super(resource + " já existe com " + field + ": " + value, HttpStatus.CONFLICT, "DUPLICATE_RESOURCE");
+    }
 }

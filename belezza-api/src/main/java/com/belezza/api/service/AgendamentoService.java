@@ -1,0 +1,366 @@
+package com.belezza.api.service;
+
+import com.belezza.api.dto.agendamento.AgendamentoRequest;
+import com.belezza.api.dto.agendamento.AgendamentoResponse;
+import com.belezza.api.dto.agendamento.CancelamentoRequest;
+import com.belezza.api.dto.agendamento.ReagendamentoRequest;
+import com.belezza.api.entity.*;
+import com.belezza.api.exception.BusinessException;
+import com.belezza.api.exception.ResourceNotFoundException;
+import com.belezza.api.repository.AgendamentoRepository;
+import com.belezza.api.repository.ClienteRepository;
+import com.belezza.api.repository.HorarioTrabalhoRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class AgendamentoService {
+
+    private final AgendamentoRepository agendamentoRepository;
+    private final ClienteRepository clienteRepository;
+    private final HorarioTrabalhoRepository horarioTrabalhoRepository;
+    private final SalonService salonService;
+    private final ProfissionalService profissionalService;
+    private final ServicoService servicoService;
+    private final ClienteService clienteService;
+    private final BloqueioHorarioService bloqueioHorarioService;
+
+    @Transactional
+    public AgendamentoResponse criar(AgendamentoRequest request, String emailCliente) {
+        log.info("Criando agendamento para cliente: {}", emailCliente);
+
+        Profissional profissional = profissionalService.getProfissionalEntity(request.getProfissionalId());
+        Servico servico = servicoService.getServicoEntity(request.getServicoId());
+        Salon salon = profissional.getSalon();
+
+        // Get or create client for this salon
+        Cliente cliente = clienteService.getOrCreateCliente(salon.getId(), emailCliente);
+
+        // Validate everything
+        validarAgendamento(salon, profissional, servico, cliente, request.getDataHora());
+
+        // Calculate end time
+        LocalDateTime fimPrevisto = request.getDataHora().plusMinutes(servico.getDuracaoMinutos());
+
+        // Check for conflicts
+        validarConflitos(profissional.getId(), request.getDataHora(), fimPrevisto);
+
+        // Create appointment
+        Agendamento agendamento = Agendamento.builder()
+                .salon(salon)
+                .cliente(cliente)
+                .profissional(profissional)
+                .servico(servico)
+                .dataHora(request.getDataHora())
+                .fimPrevisto(fimPrevisto)
+                .status(StatusAgendamento.PENDENTE)
+                .observacoes(request.getObservacoes())
+                .valorCobrado(servico.getPreco())
+                .tokenConfirmacao(UUID.randomUUID().toString())
+                .build();
+
+        agendamento = agendamentoRepository.save(agendamento);
+
+        // Increment client appointment count
+        clienteRepository.incrementTotalAgendamentos(cliente.getId());
+
+        log.info("Agendamento criado: {} para {} em {}", agendamento.getId(), emailCliente, request.getDataHora());
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional(readOnly = true)
+    public AgendamentoResponse buscarPorId(Long id) {
+        Agendamento agendamento = agendamentoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento", id));
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AgendamentoResponse> listarPorSalon(Long salonId, Pageable pageable) {
+        return agendamentoRepository.findBySalonId(salonId, pageable)
+                .map(AgendamentoResponse::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AgendamentoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
+        return agendamentoRepository.findByClienteId(clienteId, pageable)
+                .map(AgendamentoResponse::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AgendamentoResponse> listarPorProfissional(Long profissionalId, Pageable pageable) {
+        return agendamentoRepository.findByProfissionalId(profissionalId, pageable)
+                .map(AgendamentoResponse::fromEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AgendamentoResponse> listarAgendaDiaria(Long profissionalId, LocalDateTime data) {
+        LocalDateTime dayStart = data.toLocalDate().atStartOfDay();
+        LocalDateTime dayEnd = dayStart.plusDays(1);
+
+        return agendamentoRepository.findDailyByProfissional(profissionalId, dayStart, dayEnd).stream()
+                .map(AgendamentoResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public AgendamentoResponse confirmar(Long id) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+            throw new BusinessException("Apenas agendamentos pendentes podem ser confirmados");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONFIRMADO);
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento confirmado: {}", id);
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse confirmarPorToken(String token) {
+        Agendamento agendamento = agendamentoRepository.findByTokenConfirmacao(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento", "token", token));
+
+        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+            throw new BusinessException("Apenas agendamentos pendentes podem ser confirmados");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONFIRMADO);
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento confirmado por token: {}", agendamento.getId());
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse iniciar(Long id) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.CONFIRMADO) {
+            throw new BusinessException("Apenas agendamentos confirmados podem ser iniciados");
+        }
+
+        agendamento.setStatus(StatusAgendamento.EM_ANDAMENTO);
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento iniciado: {}", id);
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse concluir(Long id) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.EM_ANDAMENTO) {
+            throw new BusinessException("Apenas agendamentos em andamento podem ser concluídos");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento concluído: {}", id);
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse cancelar(Long id, CancelamentoRequest request) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() == StatusAgendamento.CONCLUIDO ||
+            agendamento.getStatus() == StatusAgendamento.CANCELADO ||
+            agendamento.getStatus() == StatusAgendamento.NO_SHOW) {
+            throw new BusinessException("Este agendamento não pode ser cancelado");
+        }
+
+        // Check minimum cancellation time
+        Salon salon = agendamento.getSalon();
+        LocalDateTime limiteCancel = agendamento.getDataHora().minusHours(salon.getCancelamentoMinimoHoras());
+        if (LocalDateTime.now().isAfter(limiteCancel)) {
+            throw new BusinessException("Cancelamento deve ser feito com pelo menos " +
+                    salon.getCancelamentoMinimoHoras() + " horas de antecedência");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+        agendamento.setMotivoCancelamento(request.getMotivo());
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento cancelado: {} - Motivo: {}", id, request.getMotivo());
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse reagendar(Long id, ReagendamentoRequest request) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() == StatusAgendamento.CONCLUIDO ||
+            agendamento.getStatus() == StatusAgendamento.CANCELADO ||
+            agendamento.getStatus() == StatusAgendamento.NO_SHOW) {
+            throw new BusinessException("Este agendamento não pode ser reagendado");
+        }
+
+        Profissional profissional = agendamento.getProfissional();
+        if (request.getNovoProfissionalId() != null) {
+            profissional = profissionalService.getProfissionalEntity(request.getNovoProfissionalId());
+        }
+
+        Servico servico = agendamento.getServico();
+        Salon salon = agendamento.getSalon();
+        Cliente cliente = agendamento.getCliente();
+
+        // Validate new datetime
+        validarAgendamento(salon, profissional, servico, cliente, request.getNovaDataHora());
+
+        LocalDateTime novoFim = request.getNovaDataHora().plusMinutes(servico.getDuracaoMinutos());
+        validarConflitos(profissional.getId(), request.getNovaDataHora(), novoFim);
+
+        agendamento.setDataHora(request.getNovaDataHora());
+        agendamento.setFimPrevisto(novoFim);
+        agendamento.setProfissional(profissional);
+        agendamento.setStatus(StatusAgendamento.PENDENTE);
+        agendamento.setLembreteEnviado24h(false);
+        agendamento.setLembreteEnviado2h(false);
+
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento reagendado: {} para {}", id, request.getNovaDataHora());
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
+    public AgendamentoResponse marcarNoShow(Long id) {
+        Agendamento agendamento = getAgendamento(id);
+
+        if (agendamento.getStatus() != StatusAgendamento.CONFIRMADO) {
+            throw new BusinessException("Apenas agendamentos confirmados podem ser marcados como no-show");
+        }
+
+        agendamento.setStatus(StatusAgendamento.NO_SHOW);
+        agendamento = agendamentoRepository.save(agendamento);
+
+        // Increment client no-show counter
+        clienteRepository.incrementNoShows(agendamento.getCliente().getId());
+
+        // Check if client should be blocked
+        Salon salon = agendamento.getSalon();
+        Cliente cliente = agendamento.getCliente();
+        if (cliente.getNoShows() + 1 >= salon.getMaxNoShowsPermitidos()) {
+            cliente.setBloqueado(true);
+            clienteRepository.save(cliente);
+            log.warn("Cliente {} bloqueado por excesso de no-shows", cliente.getId());
+        }
+
+        log.info("Agendamento marcado como no-show: {}", id);
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    // --- Validation Methods ---
+
+    private void validarAgendamento(Salon salon, Profissional profissional, Servico servico,
+                                     Cliente cliente, LocalDateTime dataHora) {
+        // 1. Salon accepts online scheduling
+        if (!salon.isAceitaAgendamentoOnline()) {
+            throw new BusinessException("Este salão não aceita agendamentos online");
+        }
+
+        // 2. Professional accepts online scheduling
+        if (!profissional.isAceitaAgendamentoOnline()) {
+            throw new BusinessException("Este profissional não aceita agendamentos online");
+        }
+
+        // 3. Professional belongs to salon
+        if (!profissional.getSalon().getId().equals(salon.getId())) {
+            throw new BusinessException("Profissional não pertence a este salão");
+        }
+
+        // 4. Service belongs to salon
+        if (!servico.getSalon().getId().equals(salon.getId())) {
+            throw new BusinessException("Serviço não pertence a este salão");
+        }
+
+        // 5. Client is not blocked
+        if (cliente.isBloqueado()) {
+            throw new BusinessException("Cliente bloqueado. Entre em contato com o salão.");
+        }
+
+        // 6. Minimum advance time
+        LocalDateTime minDateTime = LocalDateTime.now().plusHours(salon.getAntecedenciaMinimaHoras());
+        if (dataHora.isBefore(minDateTime)) {
+            throw new BusinessException("Agendamento deve ser feito com pelo menos " +
+                    salon.getAntecedenciaMinimaHoras() + " horas de antecedência");
+        }
+
+        // 7. Within salon business hours
+        LocalTime horarioServico = dataHora.toLocalTime();
+        LocalTime fimServico = horarioServico.plusMinutes(servico.getDuracaoMinutos());
+        if (horarioServico.isBefore(salon.getHorarioAbertura()) || fimServico.isAfter(salon.getHorarioFechamento())) {
+            throw new BusinessException("Horário fora do funcionamento do salão (" +
+                    salon.getHorarioAbertura() + " - " + salon.getHorarioFechamento() + ")");
+        }
+
+        // 8. Professional works on this day
+        DiaSemana diaSemana = toDiaSemana(dataHora.getDayOfWeek());
+        HorarioTrabalho horario = horarioTrabalhoRepository
+                .findByProfissionalIdAndDiaSemana(profissional.getId(), diaSemana)
+                .orElse(null);
+
+        if (horario != null && horario.isAtivo()) {
+            if (horarioServico.isBefore(horario.getHoraInicio()) || fimServico.isAfter(horario.getHoraFim())) {
+                throw new BusinessException("Horário fora do expediente do profissional (" +
+                        horario.getHoraInicio() + " - " + horario.getHoraFim() + ")");
+            }
+
+            // Check if appointment overlaps with break
+            if (horarioServico.isBefore(horario.getIntervaloFim()) &&
+                fimServico.isAfter(horario.getIntervaloInicio())) {
+                throw new BusinessException("Horário conflita com o intervalo do profissional (" +
+                        horario.getIntervaloInicio() + " - " + horario.getIntervaloFim() + ")");
+            }
+        }
+
+        // 9. No time blocks
+        LocalDateTime fimPrevisto = dataHora.plusMinutes(servico.getDuracaoMinutos());
+        if (bloqueioHorarioService.temBloqueio(profissional.getId(), dataHora, fimPrevisto)) {
+            throw new BusinessException("Profissional possui bloqueio de horário neste período");
+        }
+    }
+
+    private void validarConflitos(Long profissionalId, LocalDateTime inicio, LocalDateTime fim) {
+        List<Agendamento> conflitos = agendamentoRepository.findConflicts(profissionalId, inicio, fim);
+        if (!conflitos.isEmpty()) {
+            throw new BusinessException("Profissional já possui agendamento neste horário");
+        }
+    }
+
+    private Agendamento getAgendamento(Long id) {
+        return agendamentoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento", id));
+    }
+
+    private DiaSemana toDiaSemana(DayOfWeek dayOfWeek) {
+        return switch (dayOfWeek) {
+            case MONDAY -> DiaSemana.SEGUNDA;
+            case TUESDAY -> DiaSemana.TERCA;
+            case WEDNESDAY -> DiaSemana.QUARTA;
+            case THURSDAY -> DiaSemana.QUINTA;
+            case FRIDAY -> DiaSemana.SEXTA;
+            case SATURDAY -> DiaSemana.SABADO;
+            case SUNDAY -> DiaSemana.DOMINGO;
+        };
+    }
+}

@@ -63,7 +63,8 @@ public class SecurityConfig {
         "/v3/api-docs/**",
         "/api-docs/**",
         "/swagger-resources/**",
-        "/webjars/**"
+        "/webjars/**",
+        "/h2-console/**"
     };
 
     @Bean
@@ -98,6 +99,9 @@ public class SecurityConfig {
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
+
+            // Allow frames for H2 console
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
 
             // Set authentication provider
             .authenticationProvider(authenticationProvider())

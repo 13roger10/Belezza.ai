@@ -54,7 +54,21 @@
       "Bash(cd:*)",
       "Bash(set \"JAVA_HOME=%cd%\\\\tools\\\\jdk-21.0.4\")",
       "Bash(set \"PATH=%cd%\\\\tools\\\\jdk-21.0.4\\\\bin;%PATH%\")",
-      "Bash(.toolsapache-maven-3.9.6binmvn compile:*)"
+      "Bash(.toolsapache-maven-3.9.6binmvn compile:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(node -e:*)",
+      "Bash(1 -v)",
+      "Bash(curl.exe:*)",
+      "Bash(JAVA_HOME=\"c:/Users/Rogerio Martins/Nova pasta/Belezza.ai/belezza-api/tools/jdk-21.0.4\":*)",
+      "Bash(\"$JAVA_HOME/bin/java\" -version)",
+      "Bash(tasklist:*)",
+      "Bash(cmd /c:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiQURNSU4iLCJwbGFubyI6IkZSRUUiLCJub21lIjoiQWRtaW5pc3RyYWRvciBCZWxlenphIiwidXNlcklkIjoxLCJzdWIiOiJhZG1pbkBiZWxlenphLmFpIiwiaXNzIjoiYmVsZXp6YS1hcGkiLCJpYXQiOjE3NzA0MDgzNzAsImV4cCI6MTc3MDQwOTI3MH0.9OmYSYLLK8xOFhz7xZz44_pXhKN30BeKgUUfLfR4ZRqAxXDjSVT_vtS_BS01Ha7yyt-aof3Uh9ACBHr41XklSg\")",
+      "Bash(__NEW_LINE_a9cd0e918d0aca9d__ echo \"=== CRIANDO SALAO ===\")",
+      "Bash(__NEW_LINE_a9cd0e918d0aca9d__ echo \"\")",
+      "Bash(__NEW_LINE_da51d79df2045a72__ echo \"=== REGISTRANDO PROFISSIONAL ===\")",
+      "Bash(__NEW_LINE_da51d79df2045a72__ echo \"\")"
     ]
   }
 }
