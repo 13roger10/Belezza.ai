@@ -1,0 +1,64 @@
+# Belezza API - Test Profile
+# Active with: @ActiveProfiles("test")
+
+spring:
+  # H2 Database for tests
+  datasource:
+    url: jdbc:h2:mem:belezza_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # JPA Configuration for Tests
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # Disable Flyway for tests (using Hibernate ddl-auto)
+  flyway:
+    enabled: false
+
+  # Disable Redis for tests
+  cache:
+    type: none
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+# Logging - minimal in tests
+logging:
+  level:
+    root: WARN
+    com.belezza: INFO
+    org.springframework.security: WARN
+
+# Test settings
+belezza:
+  jwt:
+    secret: test-secret-key-for-unit-tests-256-bits-minimum-required
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
+
+  cors:
+    allowed-origins: http://localhost:3000
+
+  rate-limit:
+    enabled: false
+
+  aws:
+    s3:
+      bucket: test-bucket
+      region: us-east-1
+
+# Swagger disabled in tests
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
