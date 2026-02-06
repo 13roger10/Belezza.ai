@@ -50,7 +50,11 @@
       "Bash(./tools/apache-maven-3.9.6/bin/mvn:*)",
       "Bash(export:*)",
       "Bash(kill:*)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiQURNSU4iLCJwbGFubyI6IkZSRUUiLCJub21lIjoiQWRtaW5pc3RyYWRvciBCZWxlenphIiwidXNlcklkIjoxLCJzdWIiOiJhZG1pbkBiZWxlenphLmFpIiwiaXNzIjoiYmVsZXp6YS1hcGkiLCJpYXQiOjE3NzAzMTQwODksImV4cCI6MTc3MDMxNDk4OX0.Ejzl_8tEfgRjCOf_-Ed1lGzILdZZ0nDM38H2uJkPi8GQVXIgfeOMSjyzonfeDhlObrdzeIlb_vHNJ14MKF2-4g\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiQURNSU4iLCJwbGFubyI6IkZSRUUiLCJub21lIjoiQWRtaW5pc3RyYWRvciBCZWxlenphIiwidXNlcklkIjoxLCJzdWIiOiJhZG1pbkBiZWxlenphLmFpIiwiaXNzIjoiYmVsZXp6YS1hcGkiLCJpYXQiOjE3NzAzMTQwODksImV4cCI6MTc3MDMxNDk4OX0.Ejzl_8tEfgRjCOf_-Ed1lGzILdZZ0nDM38H2uJkPi8GQVXIgfeOMSjyzonfeDhlObrdzeIlb_vHNJ14MKF2-4g\")",
+      "Bash(cd:*)",
+      "Bash(set \"JAVA_HOME=%cd%\\\\tools\\\\jdk-21.0.4\")",
+      "Bash(set \"PATH=%cd%\\\\tools\\\\jdk-21.0.4\\\\bin;%PATH%\")",
+      "Bash(.toolsapache-maven-3.9.6binmvn compile:*)"
     ]
   }
 }
