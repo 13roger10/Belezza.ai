@@ -15,6 +15,14 @@ const securityHeaders = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
+// Conditional logging helper for middleware
+const isDevelopment = process.env.NODE_ENV === "development";
+const log = (...args: unknown[]) => {
+  if (isDevelopment) {
+    console.log(...args);
+  }
+};
+
 function addSecurityHeaders(response: NextResponse): NextResponse {
   // Only add security headers in production
   if (process.env.NODE_ENV === "production") {
@@ -29,12 +37,11 @@ export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value;
 
-  // Log para debug (remover em produção)
-  console.log(`[Middleware] Path: ${pathname}, Token exists: ${!!token}`);
+  log(`[Middleware] Path: ${pathname}, Token exists: ${!!token}`);
 
   // Se o usuário já estiver autenticado e tentar acessar login, redirecionar para dashboard
   if (pathname === "/login" && token) {
-    console.log("[Middleware] Redirecting authenticated user from /login to /admin/dashboard");
+    log("[Middleware] Redirecting authenticated user from /login to /admin/dashboard");
     return addSecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)));
   }
 
@@ -47,12 +54,12 @@ export default function proxy(request: NextRequest) {
   if (isProtectedRoute) {
     // Se não houver token, redirecionar para login
     if (!token) {
-      console.log("[Middleware] No token found, redirecting to /login");
+      log("[Middleware] No token found, redirecting to /login");
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return addSecurityHeaders(NextResponse.redirect(loginUrl));
     }
-    console.log("[Middleware] Token found, allowing access to protected route");
+    log("[Middleware] Token found, allowing access to protected route");
   }
 
   return addSecurityHeaders(NextResponse.next());

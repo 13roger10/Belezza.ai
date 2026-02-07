@@ -70,7 +70,7 @@ export function useUpload(options: UseUploadOptions = {}) {
   // Update ref in effect to avoid updating during render
   useEffect(() => {
     optsRef.current = { ...DEFAULT_OPTIONS, ...options };
-  });
+  }, [options]);
   const [state, setState] = useState<UploadState>(initialState);
   const abortControllerRef = useRef<AbortController | null>(null);
   const startTimeRef = useRef<number | null>(null);

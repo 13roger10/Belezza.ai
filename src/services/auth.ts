@@ -1,5 +1,8 @@
 import { api } from "@/lib/api";
+import { createLogger } from "@/lib/logger";
 import type { User } from "@/types";
+
+const logger = createLogger("AuthService");
 
 interface LoginResponse {
   user: User;
@@ -114,7 +117,7 @@ export const authService = {
     }
 
     // Usar API route Next.js (que configura o cookie server-side)
-    console.log("[Auth Service] Calling API route with:", { email });
+    logger.info("Calling login API route", { email });
 
     const response = await fetch("/api/auth/login", {
       method: "POST",
@@ -124,16 +127,16 @@ export const authService = {
       body: JSON.stringify({ email, password }),
     });
 
-    console.log("[Auth Service] API route response status:", response.status);
+    logger.debug("API route response received", { status: response.status });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-      console.error("[Auth Service] Login failed:", errorData);
+      logger.error("Login failed", new Error(errorData.message || "Unknown error"));
       throw new Error("Credenciais inválidas");
     }
 
     const mappedResponse: LoginResponse = await response.json();
-    console.log("[Auth Service] Login successful:", {
+    logger.info("Login successful", {
       userId: mappedResponse.user.id,
       email: mappedResponse.user.email
     });

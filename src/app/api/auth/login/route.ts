@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { createLogger } from "@/lib/logger";
+
+const logger = createLogger("API:Login");
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    console.log("[API Login] Received credentials:", { email });
+    logger.info("Received login request", { email });
 
-    // Fazer login no backend - NEXT_PUBLIC_ vars não funcionam em API Routes
-    const backendUrl = "http://localhost:8080/api";
-    console.log("[API Login] Backend URL:", backendUrl);
+    // Use environment variable for backend URL (falls back to localhost for development)
+    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8080/api";
+    logger.debug("Backend URL configured", { backendUrl });
 
     const response = await fetch(`${backendUrl}/auth/login`, {
       method: "POST",
@@ -20,11 +23,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ email, password }),
     });
 
-    console.log("[API Login] Backend response status:", response.status);
+    logger.debug("Backend response received", { status: response.status });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("[API Login] Backend error:", error);
+      logger.error("Backend login failed", new Error(error), { status: response.status });
       return NextResponse.json(
         { message: "Login failed" },
         { status: response.status }
@@ -32,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log("[API Login] Backend data received:", {
+    logger.info("Login successful", {
       hasUser: !!data.user,
       hasToken: !!data.accessToken
     });
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
       path: "/",
     });
 
-    console.log("[API Login] Cookie set successfully");
+    logger.debug("Cookie set successfully");
 
     // Mapear resposta para formato do frontend
     const frontendResponse = {
@@ -65,10 +68,10 @@ export async function POST(request: NextRequest) {
       token: data.accessToken,
     };
 
-    console.log("[API Login] Returning frontend response");
+    logger.debug("Returning login response");
     return NextResponse.json(frontendResponse);
   } catch (error) {
-    console.error("[API Login] Error:", error);
+    logger.error("Internal server error during login", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

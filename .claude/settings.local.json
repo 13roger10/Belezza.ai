@@ -71,7 +71,8 @@
       "Bash(__NEW_LINE_da51d79df2045a72__ echo \"\")",
       "Bash(git rm:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
