@@ -28,6 +28,7 @@ belezza-api/tools/jdk-21.0.4/
 # misc
 .DS_Store
 *.pem
+nul
 
 # debug
 npm-debug.log*
