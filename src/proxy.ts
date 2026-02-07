@@ -27,6 +27,16 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const token = request.cookies.get("auth_token")?.value;
+
+  // Log para debug (remover em produção)
+  console.log(`[Middleware] Path: ${pathname}, Token exists: ${!!token}`);
+
+  // Se o usuário já estiver autenticado e tentar acessar login, redirecionar para dashboard
+  if (pathname === "/login" && token) {
+    console.log("[Middleware] Redirecting authenticated user from /login to /admin/dashboard");
+    return addSecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)));
+  }
 
   // Verificar se é uma rota protegida
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -35,23 +45,14 @@ export default function proxy(request: NextRequest) {
 
   // Se for uma rota protegida, verificar autenticação
   if (isProtectedRoute) {
-    const token = request.cookies.get("auth_token")?.value;
-
     // Se não houver token, redirecionar para login
     if (!token) {
+      console.log("[Middleware] No token found, redirecting to /login");
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return addSecurityHeaders(NextResponse.redirect(loginUrl));
     }
-  }
-
-  // Se o usuário já estiver autenticado e tentar acessar login, redirecionar para dashboard
-  if (pathname === "/login") {
-    const token = request.cookies.get("auth_token")?.value;
-
-    if (token) {
-      return addSecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)));
-    }
+    console.log("[Middleware] Token found, allowing access to protected route");
   }
 
   return addSecurityHeaders(NextResponse.next());

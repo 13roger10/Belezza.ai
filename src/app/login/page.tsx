@@ -20,7 +20,8 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      router.push("/admin/welcome");
+      // Usar window.location para forçar reload completo e garantir que o middleware veja o cookie
+      window.location.href = "/admin/welcome";
     } catch {
       showError("Falha no login", "Email ou senha inválidos");
     }

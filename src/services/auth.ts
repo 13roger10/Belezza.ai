@@ -11,6 +11,38 @@ interface LoginRequest {
   password: string;
 }
 
+// Backend API response format (Java Spring Boot)
+interface BackendLoginResponse {
+  user: {
+    id: number;
+    email: string;
+    nome: string;
+    telefone: string;
+    role: "ADMIN" | "PROFISSIONAL" | "CLIENTE";
+    plano: string;
+    emailVerificado: boolean;
+    criadoEm: string;
+    ultimoLogin?: string;
+  };
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+}
+
+// Mapeia resposta do backend para formato do frontend
+function mapBackendUserToFrontend(backendUser: BackendLoginResponse["user"]): User {
+  return {
+    id: backendUser.id.toString(),
+    email: backendUser.email,
+    name: backendUser.nome,
+    role: backendUser.role === "ADMIN" ? "admin" : "user",
+    avatar: undefined,
+    createdAt: new Date(backendUser.criadoEm),
+    updatedAt: new Date(backendUser.ultimoLogin || backendUser.criadoEm),
+  };
+}
+
 // Credenciais de administrador (usar variáveis de ambiente em produção)
 const ADMIN_CREDENTIALS = {
   email: process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@socialstudio.com",
@@ -39,10 +71,8 @@ const generateMockToken = () => {
 };
 
 // Verificar se deve usar autenticação mock (sem backend)
-// Em produção, usar API real quando disponível
-const useMockAuth = process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true" ||
-                    process.env.NODE_ENV === "development" ||
-                    !process.env.NEXT_PUBLIC_API_URL;
+// Mock auth está desabilitado - usando API real do backend Java
+const useMockAuth = process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true";
 
 // Função para definir cookie de autenticação
 const setAuthCookie = (token: string) => {
@@ -83,14 +113,36 @@ export const authService = {
       throw new Error("Credenciais inválidas");
     }
 
-    // Em produção, usar API real
-    const response = await api.post<LoginResponse>("/auth/login", {
-      email,
-      password,
-    } as LoginRequest);
+    // Usar API route Next.js (que configura o cookie server-side)
+    console.log("[Auth Service] Calling API route with:", { email });
 
-    setAuthCookie(response.data.token);
-    return response.data;
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    console.log("[Auth Service] API route response status:", response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+      console.error("[Auth Service] Login failed:", errorData);
+      throw new Error("Credenciais inválidas");
+    }
+
+    const mappedResponse: LoginResponse = await response.json();
+    console.log("[Auth Service] Login successful:", {
+      userId: mappedResponse.user.id,
+      email: mappedResponse.user.email
+    });
+
+    // Cookie já foi configurado server-side pela API route
+    // Mas também configura client-side para compatibilidade
+    setAuthCookie(mappedResponse.token);
+
+    return mappedResponse;
   },
 
   async verifyToken(token: string): Promise<boolean> {

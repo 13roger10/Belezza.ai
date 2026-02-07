@@ -68,7 +68,10 @@
       "Bash(__NEW_LINE_a9cd0e918d0aca9d__ echo \"=== CRIANDO SALAO ===\")",
       "Bash(__NEW_LINE_a9cd0e918d0aca9d__ echo \"\")",
       "Bash(__NEW_LINE_da51d79df2045a72__ echo \"=== REGISTRANDO PROFISSIONAL ===\")",
-      "Bash(__NEW_LINE_da51d79df2045a72__ echo \"\")"
+      "Bash(__NEW_LINE_da51d79df2045a72__ echo \"\")",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

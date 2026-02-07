@@ -8,6 +8,7 @@ import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { CaptionGeneratorPanel } from "@/components/caption";
 import { generateCaption } from "@/services/caption-ai";
+import { imageStorage } from "@/services/imageStorage";
 import type {
   CaptionGenerationOptions,
   CaptionGenerationResult,
@@ -26,15 +27,24 @@ export default function CaptionPage() {
   const [selectedCaption, setSelectedCaption] = useState<GeneratedCaption | null>(null);
   const [lastOptions, setLastOptions] = useState<CaptionGenerationOptions | null>(null);
 
-  // Carregar imagem da sessão
+  // Carregar imagem do IndexedDB
   useEffect(() => {
-    const storedImage = sessionStorage.getItem("editedImage");
-    if (storedImage) {
-      setImageData(storedImage);
-    } else {
-      warning("Nenhuma imagem", "Edite uma imagem primeiro");
-      router.push("/admin/capture");
-    }
+    const loadImage = async () => {
+      try {
+        const storedImage = await imageStorage.getItem("editedImage");
+        if (storedImage) {
+          setImageData(storedImage);
+        } else {
+          warning("Nenhuma imagem", "Edite uma imagem primeiro");
+          router.push("/admin/capture");
+        }
+      } catch (error) {
+        console.error("Failed to load edited image:", error);
+        warning("Erro ao carregar", "Não foi possível carregar a imagem");
+        router.push("/admin/capture");
+      }
+    };
+    loadImage();
   }, [router, warning]);
 
   // Gerar legenda

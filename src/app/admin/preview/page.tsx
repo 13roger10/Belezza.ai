@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { PreviewComparison } from "@/components/preview";
 import { ScheduleModal } from "@/components/schedule";
 import { postService } from "@/services/post";
+import { imageStorage } from "@/services/imageStorage";
 import type { UploadResult } from "@/services/upload";
 
 type Platform = "instagram" | "facebook" | "both";
@@ -32,49 +33,53 @@ export default function PreviewPage() {
   const [isScheduling, setIsScheduling] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-  // Carregar dados do post da sessao
+  // Carregar dados do post do storage
   useEffect(() => {
-    const storedData = sessionStorage.getItem("previewPostData");
-    if (storedData) {
+    const loadPostData = async () => {
       try {
-        const data = JSON.parse(storedData);
-        setPostData(data);
-      } catch {
-        warning("Erro ao carregar", "Nao foi possivel carregar os dados do post");
-        router.push("/admin/post/create");
-      }
-    } else {
-      // Tentar carregar dados individuais como fallback
-      const imageData = sessionStorage.getItem("editedImage");
-      const captionData = sessionStorage.getItem("generatedCaption");
+        const storedData = sessionStorage.getItem("previewPostData");
+        if (storedData) {
+          const data = JSON.parse(storedData);
+          setPostData(data);
+        } else {
+          // Tentar carregar dados individuais como fallback
+          const imageData = await imageStorage.getItem("editedImage");
+          const captionData = sessionStorage.getItem("generatedCaption");
 
-      if (imageData) {
-        let caption = "";
-        let hashtags: string[] = [];
+          if (imageData) {
+            let caption = "";
+            let hashtags: string[] = [];
 
-        if (captionData) {
-          try {
-            const parsed = JSON.parse(captionData);
-            caption = parsed.text || "";
-            hashtags = parsed.hashtags || [];
-          } catch {
-            // Ignora erro
+            if (captionData) {
+              try {
+                const parsed = JSON.parse(captionData);
+                caption = parsed.text || "";
+                hashtags = parsed.hashtags || [];
+              } catch {
+                // Ignora erro
+              }
+            }
+
+            setPostData({
+              imageData,
+              uploadedImage: null,
+              title: "",
+              caption,
+              hashtags,
+              platform: "both",
+            });
+          } else {
+            warning("Nenhum post", "Crie um post primeiro");
+            router.push("/admin/post/create");
           }
         }
-
-        setPostData({
-          imageData,
-          uploadedImage: null,
-          title: "",
-          caption,
-          hashtags,
-          platform: "both",
-        });
-      } else {
-        warning("Nenhum post", "Crie um post primeiro");
+      } catch (error) {
+        console.error("Failed to load post data:", error);
+        warning("Erro ao carregar", "Não foi possível carregar os dados do post");
         router.push("/admin/post/create");
       }
-    }
+    };
+    loadPostData();
   }, [router, warning]);
 
   // Voltar para edicao

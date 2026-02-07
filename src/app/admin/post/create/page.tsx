@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { UploadProgress } from "@/components/upload";
 import { useUpload } from "@/hooks/useUpload";
 import { postService } from "@/services/post";
+import { imageStorage } from "@/services/imageStorage";
 import {
   RichCaptionEditor,
   HashtagManager,
@@ -68,33 +69,42 @@ export default function CreatePostPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [activeSection, setActiveSection] = useState<"caption" | "hashtags">("caption");
 
-  // Carregar imagem da sessao
+  // Carregar imagem do IndexedDB
   useEffect(() => {
-    const storedImage = sessionStorage.getItem("editedImage");
-    if (storedImage) {
-      setImageData(storedImage);
-    } else {
-      warning("Nenhuma imagem", "Selecione e edite uma imagem primeiro");
-      router.push("/admin/capture");
-    }
-
-    // Carregar legenda gerada pela IA (se existir)
-    const storedCaption = sessionStorage.getItem("generatedCaption");
-    if (storedCaption) {
+    const loadData = async () => {
       try {
-        const captionData = JSON.parse(storedCaption);
-        if (captionData.text) {
-          setCaption(captionData.text);
+        const storedImage = await imageStorage.getItem("editedImage");
+        if (storedImage) {
+          setImageData(storedImage);
+        } else {
+          warning("Nenhuma imagem", "Selecione e edite uma imagem primeiro");
+          router.push("/admin/capture");
         }
-        if (captionData.hashtags && Array.isArray(captionData.hashtags)) {
-          setHashtags(captionData.hashtags);
+
+        // Carregar legenda gerada pela IA (se existir)
+        const storedCaption = sessionStorage.getItem("generatedCaption");
+        if (storedCaption) {
+          try {
+            const captionData = JSON.parse(storedCaption);
+            if (captionData.text) {
+              setCaption(captionData.text);
+            }
+            if (captionData.hashtags && Array.isArray(captionData.hashtags)) {
+              setHashtags(captionData.hashtags);
+            }
+            // Limpar apos carregar
+            sessionStorage.removeItem("generatedCaption");
+          } catch {
+            // Ignora erro de parse
+          }
         }
-        // Limpar apos carregar
-        sessionStorage.removeItem("generatedCaption");
-      } catch {
-        // Ignora erro de parse
+      } catch (error) {
+        console.error("Failed to load image:", error);
+        warning("Erro ao carregar", "Não foi possível carregar a imagem");
+        router.push("/admin/capture");
       }
-    }
+    };
+    loadData();
   }, [router, warning]);
 
   // Iniciar upload quando a imagem for carregada

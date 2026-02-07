@@ -83,20 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const user = JSON.parse(userStr) as User;
 
-      // Verificar se o token ainda é válido
-      const isValid = await authService.verifyToken(token);
-
-      if (isValid) {
-        // Redefine o cookie para garantir sincronização
-        if (typeof document !== "undefined") {
-          const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString();
-          document.cookie = `auth_token=${token}; path=/; expires=${expires}; SameSite=Lax`;
-        }
-        setAuth(user, token);
-      } else {
-        authService.logout();
-        setAuth(null, null);
+      // Redefine o cookie para garantir sincronização
+      if (typeof document !== "undefined") {
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `auth_token=${token}; path=/; expires=${expires}; SameSite=Lax`;
       }
+      setAuth(user, token);
     } catch {
       authService.logout();
       setAuth(null, null);

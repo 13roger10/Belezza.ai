@@ -18,6 +18,7 @@ import {
   StickerPanel,
 } from "@/components/editor";
 import type { EditorTool as EditorToolType } from "@/types";
+import { imageStorage } from "@/services/imageStorage";
 
 interface Tool {
   id: EditorToolType;
@@ -234,13 +235,8 @@ const filters = [
 export default function EditorPage() {
   const router = useRouter();
   const { warning, success } = useToast();
-  const [initialImage, setInitialImage] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("capturedImage");
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [initialImage, setInitialImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState("none");
   const [showAIPanel, setShowAIPanel] = useState<
     "enhance" | "background" | "style" | null
@@ -266,14 +262,30 @@ export default function EditorPage() {
   // Container scale for overlays (updated via effect, not during render)
   const [containerScale, setContainerScale] = useState(1);
 
+  // Load captured image from IndexedDB
   useEffect(() => {
+    const loadImage = async () => {
+      try {
+        const captured = await imageStorage.getItem("capturedImage");
+        setInitialImage(captured);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to load image:", error);
+        setIsLoading(false);
+      }
+    };
+    loadImage();
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
     if (hasCheckedImage.current) return;
     hasCheckedImage.current = true;
     if (!initialImage) {
       warning("Nenhuma imagem", "Selecione uma imagem primeiro");
       router.push("/admin/capture");
     }
-  }, [initialImage, router, warning]);
+  }, [initialImage, isLoading, router, warning]);
 
   // Hook do editor (só inicializa quando temos imagem)
   const editor = useImageEditor(initialImage || "");
@@ -304,16 +316,21 @@ export default function EditorPage() {
   }, [router]);
 
   const handleContinue = useCallback(async () => {
-    // Flatten overlays before saving
-    if (editor.textOverlays.length > 0 || editor.stickerOverlays.length > 0) {
-      const mergedImage = await editor.mergeOverlaysToImage();
-      sessionStorage.setItem("editedImage", mergedImage);
-    } else {
-      sessionStorage.setItem("editedImage", editor.currentImage);
+    try {
+      // Flatten overlays before saving
+      if (editor.textOverlays.length > 0 || editor.stickerOverlays.length > 0) {
+        const mergedImage = await editor.mergeOverlaysToImage();
+        await imageStorage.setItem("editedImage", mergedImage);
+      } else {
+        await imageStorage.setItem("editedImage", editor.currentImage);
+      }
+      success("Imagem salva", "Continuando para gerar legenda...");
+      router.push("/admin/caption");
+    } catch (error) {
+      console.error("Failed to save image:", error);
+      warning("Erro ao salvar", "Não foi possível salvar a imagem editada");
     }
-    success("Imagem salva", "Continuando para gerar legenda...");
-    router.push("/admin/caption");
-  }, [editor, router, success]);
+  }, [editor, router, success, warning]);
 
   const handleToolSelect = useCallback(
     (toolId: EditorToolType) => {

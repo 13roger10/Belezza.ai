@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { CameraCapture, ImagePicker, ImagePreview } from "@/components/capture";
+import { imageStorage } from "@/services/imageStorage";
 
 type CaptureMode = "select" | "camera" | "preview";
 
@@ -30,11 +31,15 @@ export default function CapturePage() {
     }
   }, [mode, router]);
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (capturedImage) {
-      // Salvar imagem no sessionStorage para o editor
-      sessionStorage.setItem("capturedImage", capturedImage);
-      router.push("/admin/editor");
+      try {
+        // Salvar imagem no IndexedDB para o editor
+        await imageStorage.setItem("capturedImage", capturedImage);
+        router.push("/admin/editor");
+      } catch (error) {
+        console.error("Failed to save captured image:", error);
+      }
     }
   }, [capturedImage, router]);
 
