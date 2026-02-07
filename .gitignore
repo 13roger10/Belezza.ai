@@ -12,6 +12,9 @@ node_modules
 !.yarn/releases
 !.yarn/versions
 
+# JDK local
+belezza-api/tools/jdk-21.0.4/
+
 # testing
 /coverage
 
