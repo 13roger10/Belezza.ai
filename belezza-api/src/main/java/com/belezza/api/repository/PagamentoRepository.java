@@ -49,4 +49,15 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
         @Param("inicio") LocalDateTime inicio,
         @Param("fim") LocalDateTime fim
     );
+
+    // Find payments by salon, status and period (for metrics)
+    @Query("SELECT p FROM Pagamento p WHERE p.salon.id = :salonId " +
+           "AND p.status = :status AND p.processadoEm BETWEEN :inicio AND :fim " +
+           "ORDER BY p.processadoEm")
+    List<Pagamento> findBySalonIdAndStatusAndPeriod(
+        @Param("salonId") Long salonId,
+        @Param("status") StatusPagamento status,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }

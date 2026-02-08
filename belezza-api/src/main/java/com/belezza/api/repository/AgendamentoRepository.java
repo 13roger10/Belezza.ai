@@ -88,4 +88,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         @Param("inicio") LocalDateTime inicio,
         @Param("fim") LocalDateTime fim
     );
+
+    // Find appointments by salon and date range (for metrics)
+    @Query("SELECT a FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "ORDER BY a.dataHora")
+    List<Agendamento> findBySalonIdAndDataHoraBetween(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }

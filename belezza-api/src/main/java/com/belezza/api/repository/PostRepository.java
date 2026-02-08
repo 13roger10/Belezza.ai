@@ -57,4 +57,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         @Param("inicio") LocalDateTime inicio,
         @Param("fim") LocalDateTime fim
     );
+
+    // Find published posts by salon and date range (for social metrics)
+    @Query("SELECT p FROM Post p WHERE p.salon.id = :salonId " +
+           "AND p.status = :status AND p.publicadoEm BETWEEN :inicio AND :fim " +
+           "ORDER BY p.publicadoEm DESC")
+    List<Post> findBySalonIdAndStatusAndPublicadoEmBetween(
+        @Param("salonId") Long salonId,
+        @Param("status") StatusPost status,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }
