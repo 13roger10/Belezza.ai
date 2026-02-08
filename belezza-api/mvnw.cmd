@@ -13,7 +13,10 @@ if not exist "%WRAPPER_JAR%" (
     powershell -Command "Invoke-WebRequest -Uri '%WRAPPER_URL%' -OutFile '%WRAPPER_JAR%'"
 )
 
+@REM Set Maven multi-module directory
+set MAVEN_PROJECTBASEDIR=%BASEDIR%
+
 @REM Execute Maven
-java %MAVEN_OPTS% -classpath "%WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*
+java %MAVEN_OPTS% "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" -classpath "%WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*
 
 endlocal
