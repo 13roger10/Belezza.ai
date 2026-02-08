@@ -79,7 +79,8 @@
       "Bash(mvnw.cmd test-compile:*)",
       "Bash(java -Dmaven.multiModuleProjectDirectory=\"$PWD\" -jar .mvn/wrapper/maven-wrapper.jar clean test-compile:*)",
       "Bash(tee:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(wmic:*)"
     ]
   }
 }

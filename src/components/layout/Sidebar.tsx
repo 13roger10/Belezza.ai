@@ -27,7 +27,7 @@ const menuItems = [
   },
   {
     label: "Criar Post",
-    href: "/admin/posts/create",
+    href: "/admin/post/create",
     icon: ImagePlus,
   },
   {
