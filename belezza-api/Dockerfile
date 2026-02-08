@@ -49,7 +49,19 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # JVM options for containers
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+               -XX:MaxRAMPercentage=75.0 \
+               -XX:InitialRAMPercentage=50.0 \
+               -XX:+UseG1GC \
+               -XX:MaxGCPauseMillis=200 \
+               -XX:+UseStringDeduplication \
+               -XX:+HeapDumpOnOutOfMemoryError \
+               -XX:HeapDumpPath=/app/heap-dump.hprof \
+               -Djava.security.egd=file:/dev/./urandom"
+
+# Spring Boot profiles and monitoring
+ENV SPRING_PROFILES_ACTIVE=production
+ENV MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED=true
 
 # Entry point
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

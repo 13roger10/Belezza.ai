@@ -69,21 +69,53 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,env,loggers,httptrace,threaddump,heapdump
       base-path: /actuator
+    jmx:
+      exposure:
+        include: "*"
   endpoint:
     health:
       show-details: when_authorized
+      show-components: when_authorized
       probes:
         enabled: true
+    prometheus:
+      enabled: true
   info:
     env:
+      enabled: true
+    git:
+      mode: full
+    build:
       enabled: true
   health:
     livenessstate:
       enabled: true
     readinessstate:
       enabled: true
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    diskspace:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:default}
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
 
 # SpringDoc / Swagger Configuration
 springdoc:
