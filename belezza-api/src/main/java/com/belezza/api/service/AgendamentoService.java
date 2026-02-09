@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -41,12 +42,31 @@ public class AgendamentoService {
     public AgendamentoResponse criar(AgendamentoRequest request, String emailCliente) {
         log.info("Criando agendamento para cliente: {}", emailCliente);
 
+        // Validate request
+        if (!request.isValid()) {
+            throw new BusinessException(request.getValidationError());
+        }
+
         Profissional profissional = profissionalService.getProfissionalEntity(request.getProfissionalId());
-        Servico servico = servicoService.getServicoEntity(request.getServicoId());
         Salon salon = profissional.getSalon();
 
         // Get or create client for this salon
         Cliente cliente = clienteService.getOrCreateCliente(salon.getId(), emailCliente);
+
+        // Check if multiple services or single service
+        if (request.hasMultipleServices()) {
+            return criarComMultiplosServicos(request, emailCliente, profissional, salon, cliente);
+        } else {
+            return criarComServicoUnico(request, emailCliente, profissional, salon, cliente);
+        }
+    }
+
+    /**
+     * Create appointment with single service (legacy approach).
+     */
+    private AgendamentoResponse criarComServicoUnico(AgendamentoRequest request, String emailCliente,
+                                                      Profissional profissional, Salon salon, Cliente cliente) {
+        Servico servico = servicoService.getServicoEntity(request.getServicoId());
 
         // Validate everything
         validarAgendamento(salon, profissional, servico, cliente, request.getDataHora());
@@ -77,6 +97,84 @@ public class AgendamentoService {
         clienteRepository.incrementTotalAgendamentos(cliente.getId());
 
         log.info("Agendamento criado: {} para {} em {}", agendamento.getId(), emailCliente, request.getDataHora());
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    /**
+     * Create appointment with multiple services (new approach).
+     */
+    private AgendamentoResponse criarComMultiplosServicos(AgendamentoRequest request, String emailCliente,
+                                                           Profissional profissional, Salon salon, Cliente cliente) {
+        log.info("Criando agendamento com {} serviços", request.getServicoIds().size());
+
+        // Load all services
+        List<Servico> servicos = request.getServicoIds().stream()
+            .map(servicoService::getServicoEntity)
+            .collect(java.util.stream.Collectors.toList());
+
+        // Validate all services belong to the same salon
+        boolean allFromSameSalon = servicos.stream()
+            .allMatch(s -> s.getSalon().getId().equals(salon.getId()));
+        if (!allFromSameSalon) {
+            throw new BusinessException("Todos os serviços devem pertencer ao mesmo salão");
+        }
+
+        // Calculate total duration
+        int tempoPreparacao = request.getTempoPreparacaoEntreServicosMinutos() != null
+            ? request.getTempoPreparacaoEntreServicosMinutos() : 0;
+        int duracaoTotal = servicos.stream()
+            .mapToInt(Servico::getDuracaoMinutos)
+            .sum();
+        if (servicos.size() > 1) {
+            duracaoTotal += tempoPreparacao * (servicos.size() - 1); // Add prep time between services
+        }
+
+        LocalDateTime fimPrevisto = request.getDataHora().plusMinutes(duracaoTotal);
+
+        // Validate
+        for (Servico servico : servicos) {
+            validarAgendamento(salon, profissional, servico, cliente, request.getDataHora());
+        }
+
+        // Check for conflicts
+        validarConflitos(profissional.getId(), request.getDataHora(), fimPrevisto);
+
+        // Calculate total price
+        BigDecimal valorTotal = servicos.stream()
+            .map(Servico::getPreco)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Create appointment (without servico for new approach)
+        Agendamento agendamento = Agendamento.builder()
+                .salon(salon)
+                .cliente(cliente)
+                .profissional(profissional)
+                .servico(null) // No single service for multiple services
+                .dataHora(request.getDataHora())
+                .fimPrevisto(fimPrevisto)
+                .status(StatusAgendamento.PENDENTE)
+                .observacoes(request.getObservacoes())
+                .valorCobrado(valorTotal)
+                .tokenConfirmacao(UUID.randomUUID().toString())
+                .build();
+
+        agendamento = agendamentoRepository.save(agendamento);
+
+        // Add services to appointment
+        for (int i = 0; i < servicos.size(); i++) {
+            Servico servico = servicos.get(i);
+            int prepTime = (i == 0) ? 0 : tempoPreparacao; // First service has no prep time
+            agendamento.addServico(servico, servico.getDuracaoMinutos(), prepTime);
+        }
+
+        agendamento = agendamentoRepository.save(agendamento);
+
+        // Increment client appointment count
+        clienteRepository.incrementTotalAgendamentos(cliente.getId());
+
+        log.info("Agendamento com múltiplos serviços criado: {} para {} em {}",
+            agendamento.getId(), emailCliente, request.getDataHora());
 
         return AgendamentoResponse.fromEntity(agendamento);
     }

@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -24,9 +27,39 @@ public class AgendamentoResponse {
     private String clienteTelefone;
     private Long profissionalId;
     private String profissionalNome;
+
+    /**
+     * Single service (legacy field for backward compatibility).
+     * @deprecated Use {@link #servicos} for appointments with multiple services
+     */
+    @Deprecated
     private Long servicoId;
+
+    /**
+     * Single service name (legacy field for backward compatibility).
+     * @deprecated Use {@link #servicos} for appointments with multiple services
+     */
+    @Deprecated
     private String servicoNome;
+
+    /**
+     * Single service duration (legacy field for backward compatibility).
+     * @deprecated Use {@link #duracaoTotalMinutos} for total duration
+     */
+    @Deprecated
     private int servicoDuracaoMinutos;
+
+    /**
+     * List of services for appointments with multiple services.
+     * For single-service appointments, this will contain one item.
+     */
+    private List<ServicoAgendadoDTO> servicos;
+
+    /**
+     * Total duration in minutes (sum of all services + preparation time).
+     */
+    private int duracaoTotalMinutos;
+
     private LocalDateTime dataHora;
     private LocalDateTime fimPrevisto;
     private StatusAgendamento status;
@@ -38,6 +71,26 @@ public class AgendamentoResponse {
     private LocalDateTime atualizadoEm;
 
     public static AgendamentoResponse fromEntity(Agendamento a) {
+        // Map services list
+        List<ServicoAgendadoDTO> servicosList = new ArrayList<>();
+        if (a.getServicos() != null && !a.getServicos().isEmpty()) {
+            // Multiple services (new approach)
+            servicosList = a.getServicos().stream()
+                .map(ServicoAgendadoDTO::fromEntity)
+                .collect(Collectors.toList());
+        } else if (a.getServico() != null) {
+            // Single service (legacy approach)
+            servicosList.add(ServicoAgendadoDTO.builder()
+                .servicoId(a.getServico().getId())
+                .servicoNome(a.getServico().getNome())
+                .servicoDescricao(a.getServico().getDescricao())
+                .servicoPreco(a.getServico().getPreco())
+                .ordem(1)
+                .duracaoPrevistaMinutos(a.getServico().getDuracaoMinutos())
+                .tempoPreparacaoMinutos(0)
+                .build());
+        }
+
         return AgendamentoResponse.builder()
                 .id(a.getId())
                 .salonId(a.getSalon().getId())
@@ -47,9 +100,13 @@ public class AgendamentoResponse {
                 .clienteTelefone(a.getCliente().getUsuario().getTelefone())
                 .profissionalId(a.getProfissional().getId())
                 .profissionalNome(a.getProfissional().getUsuario().getNome())
-                .servicoId(a.getServico().getId())
-                .servicoNome(a.getServico().getNome())
-                .servicoDuracaoMinutos(a.getServico().getDuracaoMinutos())
+                // Legacy fields (deprecated)
+                .servicoId(a.getServico() != null ? a.getServico().getId() : null)
+                .servicoNome(a.getServico() != null ? a.getServico().getNome() : null)
+                .servicoDuracaoMinutos(a.getServico() != null ? a.getServico().getDuracaoMinutos() : 0)
+                // New fields
+                .servicos(servicosList)
+                .duracaoTotalMinutos(a.getDuracaoTotalMinutos())
                 .dataHora(a.getDataHora())
                 .fimPrevisto(a.getFimPrevisto())
                 .status(a.getStatus())
