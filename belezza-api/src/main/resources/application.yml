@@ -52,6 +52,24 @@ spring:
     redis:
       timeout: 2000ms
 
+  # Mail Configuration
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from: ${MAIL_FROM:noreply@belezza.ai}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: "*"
+
+# Application Frontend URL
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
 # Server Configuration
 server:
   port: 8080

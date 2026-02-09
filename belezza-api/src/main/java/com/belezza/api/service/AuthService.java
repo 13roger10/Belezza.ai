@@ -34,6 +34,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * Registers a new user.
@@ -67,6 +69,13 @@ public class AuthService {
 
         usuario = usuarioRepository.save(usuario);
         log.info("User registered successfully with id: {}", usuario.getId());
+
+        // Send email verification
+        emailService.sendEmailVerificationEmail(
+                usuario.getEmail(),
+                usuario.getEmailVerificationToken(),
+                usuario.getNome()
+        );
 
         // Generate tokens
         String accessToken = jwtService.generateAccessToken(usuario);
@@ -179,8 +188,13 @@ public class AuthService {
                     usuario.setResetPasswordExpires(LocalDateTime.now().plusHours(2));
                     usuarioRepository.save(usuario);
 
-                    // TODO: Send email with reset link
-                    log.info("Password reset token generated for user: {}", usuario.getId());
+                    // Send password reset email
+                    emailService.sendPasswordResetEmail(
+                            usuario.getEmail(),
+                            usuario.getResetPasswordToken(),
+                            usuario.getNome()
+                    );
+                    log.info("Password reset email sent to user: {}", usuario.getId());
                 });
 
         // Always return success to prevent email enumeration
@@ -223,6 +237,31 @@ public class AuthService {
         usuario.setEmailVerificationToken(null);
         usuarioRepository.save(usuario);
 
+        // Send welcome email
+        emailService.sendWelcomeEmail(usuario.getEmail(), usuario.getNome());
+
         log.info("Email verified for user: {}", usuario.getId());
+    }
+
+    /**
+     * Logs out user by blacklisting the JWT token.
+     */
+    public void logout(String authHeader) {
+        log.info("Processing logout request");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Invalid authorization header for logout");
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        // Calculate remaining token validity
+        long expirationSeconds = jwtService.getTokenExpirationInSeconds(token);
+
+        // Add token to blacklist
+        tokenBlacklistService.blacklistToken(token, expirationSeconds);
+
+        log.info("Token blacklisted successfully");
     }
 }

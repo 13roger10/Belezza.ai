@@ -203,4 +203,23 @@ public class JwtService {
     public long getRefreshTokenExpiration() {
         return refreshTokenExpiration;
     }
+
+    /**
+     * Gets the remaining time until token expiration in seconds.
+     *
+     * @param token JWT token
+     * @return Remaining seconds until expiration, or 0 if already expired
+     */
+    public long getTokenExpirationInSeconds(String token) {
+        try {
+            Date expiration = extractExpiration(token);
+            long now = System.currentTimeMillis();
+            long expirationTime = expiration.getTime();
+            long remainingMillis = expirationTime - now;
+            return Math.max(0, remainingMillis / 1000);
+        } catch (Exception e) {
+            log.warn("Failed to extract token expiration: {}", e.getMessage());
+            return 0;
+        }
+    }
 }

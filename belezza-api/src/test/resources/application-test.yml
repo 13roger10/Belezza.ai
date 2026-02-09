@@ -12,6 +12,15 @@ spring:
     enabled: true
     clean-on-validation-error: true
 
+  # Mail Configuration (disabled for tests)
+  mail:
+    enabled: false
+
+  # Redis Configuration (disabled for tests unless needed)
+  data:
+    redis:
+      enabled: false
+
 logging:
   level:
     com.belezza: DEBUG

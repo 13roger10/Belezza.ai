@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final com.belezza.api.service.TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -64,6 +65,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Validate and process token
             if (jwtService.validateToken(jwt) && !jwtService.isRefreshToken(jwt)) {
+                // Check if token is blacklisted
+                if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+                    log.debug("Token is blacklisted");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String username = jwtService.extractUsername(jwt);
 
                 if (username != null) {

@@ -73,12 +73,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "Invalidates user session (client should discard tokens)")
+    @Operation(summary = "User logout", description = "Invalidates JWT token by adding to blacklist")
     @ApiResponse(responseCode = "200", description = "Logout successful")
-    public ResponseEntity<Map<String, String>> logout() {
-        // With JWT, logout is handled client-side by discarding tokens
-        // In the future, we can implement a token blacklist using Redis
+    public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String authHeader) {
         log.info("Logout request");
+        authService.logout(authHeader);
         return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso"));
     }
 
