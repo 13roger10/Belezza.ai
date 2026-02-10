@@ -120,12 +120,12 @@ public class LembreteAgendamentoJob {
      */
     private void enviarLembrete24h(Agendamento agendamento) {
         Cliente cliente = agendamento.getCliente();
-        if (cliente == null || cliente.getTelefone() == null) {
+        if (cliente == null || cliente.getUsuario() == null || cliente.getUsuario().getTelefone() == null) {
             log.warn("Cliente sem telefone para agendamento {}", agendamento.getId());
             return;
         }
 
-        String nomeCliente = cliente.getNome() != null ? cliente.getNome() : "Cliente";
+        String nomeCliente = cliente.getUsuario().getNome() != null ? cliente.getUsuario().getNome() : "Cliente";
         String data = agendamento.getDataHora().format(DATE_FORMATTER);
         String hora = agendamento.getDataHora().format(TIME_FORMATTER);
         String servico = agendamento.getServico() != null
@@ -137,7 +137,7 @@ public class LembreteAgendamentoJob {
         String linkConfirmacao = String.format("%s/confirmar-agendamento/%s", frontendUrl, token);
 
         whatsAppService.enviarLembrete24h(
-            cliente.getTelefone(),
+            cliente.getUsuario().getTelefone(),
             nomeCliente,
             data,
             hora,
@@ -151,12 +151,12 @@ public class LembreteAgendamentoJob {
      */
     private void enviarLembrete2h(Agendamento agendamento) {
         Cliente cliente = agendamento.getCliente();
-        if (cliente == null || cliente.getTelefone() == null) {
+        if (cliente == null || cliente.getUsuario() == null || cliente.getUsuario().getTelefone() == null) {
             log.warn("Cliente sem telefone para agendamento {}", agendamento.getId());
             return;
         }
 
-        String nomeCliente = cliente.getNome() != null ? cliente.getNome() : "Cliente";
+        String nomeCliente = cliente.getUsuario().getNome() != null ? cliente.getUsuario().getNome() : "Cliente";
         String hora = agendamento.getDataHora().format(TIME_FORMATTER);
         String servico = agendamento.getServico() != null
             ? agendamento.getServico().getNome()
@@ -166,7 +166,7 @@ public class LembreteAgendamentoJob {
             : "Salão";
 
         whatsAppService.enviarLembrete2h(
-            cliente.getTelefone(),
+            cliente.getUsuario().getTelefone(),
             nomeCliente,
             hora,
             servico,

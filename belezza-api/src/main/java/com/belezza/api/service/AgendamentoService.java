@@ -7,11 +7,13 @@ import com.belezza.api.dto.agendamento.ReagendamentoRequest;
 import com.belezza.api.entity.*;
 import com.belezza.api.exception.BusinessException;
 import com.belezza.api.exception.ResourceNotFoundException;
+import com.belezza.api.integration.WhatsAppService;
 import com.belezza.api.repository.AgendamentoRepository;
 import com.belezza.api.repository.ClienteRepository;
 import com.belezza.api.repository.HorarioTrabalhoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +40,10 @@ public class AgendamentoService {
     private final ServicoService servicoService;
     private final ClienteService clienteService;
     private final BloqueioHorarioService bloqueioHorarioService;
+    private final WhatsAppService whatsAppService;
+
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Transactional
     public AgendamentoResponse criar(AgendamentoRequest request, String emailCliente) {
@@ -246,6 +253,33 @@ public class AgendamentoService {
     }
 
     @Transactional
+    public AgendamentoResponse cancelarPorToken(String token, String motivo) {
+        Agendamento agendamento = agendamentoRepository.findByTokenConfirmacao(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento", "token", token));
+
+        if (agendamento.getStatus() == StatusAgendamento.CONCLUIDO ||
+            agendamento.getStatus() == StatusAgendamento.CANCELADO ||
+            agendamento.getStatus() == StatusAgendamento.NO_SHOW) {
+            throw new BusinessException("Este agendamento não pode ser cancelado");
+        }
+
+        // Check minimum cancellation time
+        Salon salon = agendamento.getSalon();
+        LocalDateTime limiteCancel = agendamento.getDataHora().minusHours(salon.getCancelamentoMinimoHoras());
+        if (LocalDateTime.now().isAfter(limiteCancel)) {
+            throw new BusinessException("Cancelamento deve ser feito com pelo menos " +
+                    salon.getCancelamentoMinimoHoras() + " horas de antecedência");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+        agendamento.setMotivoCancelamento(motivo != null ? motivo : "Cancelado pelo cliente via link");
+        agendamento = agendamentoRepository.save(agendamento);
+        log.info("Agendamento cancelado por token: {} - Motivo: {}", agendamento.getId(), motivo);
+
+        return AgendamentoResponse.fromEntity(agendamento);
+    }
+
+    @Transactional
     public AgendamentoResponse iniciar(Long id) {
         Agendamento agendamento = getAgendamento(id);
 
@@ -297,6 +331,9 @@ public class AgendamentoService {
         agendamento.setMotivoCancelamento(request.getMotivo());
         agendamento = agendamentoRepository.save(agendamento);
         log.info("Agendamento cancelado: {} - Motivo: {}", id, request.getMotivo());
+
+        // Enviar notificação WhatsApp de cancelamento
+        enviarNotificacaoCancelamento(agendamento, request.getMotivo());
 
         return AgendamentoResponse.fromEntity(agendamento);
     }
@@ -460,5 +497,50 @@ public class AgendamentoService {
             case SATURDAY -> DiaSemana.SABADO;
             case SUNDAY -> DiaSemana.DOMINGO;
         };
+    }
+
+    /**
+     * Send WhatsApp cancellation notification to client.
+     */
+    private void enviarNotificacaoCancelamento(Agendamento agendamento, String motivo) {
+        try {
+            Cliente cliente = agendamento.getCliente();
+            if (cliente == null || cliente.getUsuario() == null || cliente.getUsuario().getTelefone() == null) {
+                log.warn("Cliente sem telefone para notificação de cancelamento - agendamento {}", agendamento.getId());
+                return;
+            }
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            String nomeCliente = cliente.getUsuario().getNome() != null ? cliente.getUsuario().getNome() : "Cliente";
+            String data = agendamento.getDataHora().format(dateFormatter);
+            String hora = agendamento.getDataHora().format(timeFormatter);
+
+            // Get service name (from single service or first service in list)
+            String servico = "Serviço";
+            if (agendamento.getServico() != null) {
+                servico = agendamento.getServico().getNome();
+            } else if (agendamento.getServicos() != null && !agendamento.getServicos().isEmpty()) {
+                servico = agendamento.getServicos().get(0).getServico().getNome();
+            }
+
+            String linkReagendar = frontendUrl + "/agendar/" + agendamento.getSalon().getId();
+
+            whatsAppService.enviarCancelamento(
+                cliente.getUsuario().getTelefone(),
+                nomeCliente,
+                data,
+                hora,
+                servico,
+                motivo,
+                linkReagendar
+            );
+
+            log.info("Notificação de cancelamento enviada para agendamento {}", agendamento.getId());
+        } catch (Exception e) {
+            log.error("Erro ao enviar notificação de cancelamento: {}", e.getMessage(), e);
+            // Não propagar erro - cancelamento já foi realizado
+        }
     }
 }

@@ -36,13 +36,13 @@ public class MetaGraphAPIService {
     @Value("${meta.api.version:v19.0}")
     private String apiVersion;
 
-    @Value("${meta.app.id}")
+    @Value("${meta.app.id:}")
     private String appId;
 
-    @Value("${meta.app.secret}")
+    @Value("${meta.app.secret:}")
     private String appSecret;
 
-    @Value("${meta.oauth.redirect-uri}")
+    @Value("${meta.oauth.redirect-uri:http://localhost:3000/callback}")
     private String redirectUri;
 
     private static final String OAUTH_URL = "https://www.facebook.com/v19.0/dialog/oauth";

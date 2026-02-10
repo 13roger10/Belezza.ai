@@ -31,4 +31,14 @@ public class PublicAgendamentoController {
         agendamentoService.confirmarPorToken(token);
         return ResponseEntity.ok(Map.of("message", "Agendamento confirmado com sucesso!"));
     }
+
+    @GetMapping("/{token}/cancelar")
+    @Operation(summary = "Cancelar via token", description = "Cancela agendamento usando token único")
+    public ResponseEntity<Map<String, String>> cancelarPorToken(
+            @PathVariable String token,
+            @RequestParam(required = false) String motivo) {
+        log.info("Cancelamento de agendamento via token");
+        agendamentoService.cancelarPorToken(token, motivo);
+        return ResponseEntity.ok(Map.of("message", "Agendamento cancelado com sucesso!"));
+    }
 }

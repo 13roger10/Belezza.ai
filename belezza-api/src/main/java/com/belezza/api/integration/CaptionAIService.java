@@ -30,10 +30,10 @@ public class CaptionAIService {
     @Value("${belezza.ai.openai.api-key:}")
     private String apiKey;
 
-    @Value("${belezza.ai.openai.model}")
+    @Value("${belezza.ai.openai.model:gpt-3.5-turbo}")
     private String model;
 
-    @Value("${belezza.ai.openai.api-url}")
+    @Value("${belezza.ai.openai.api-url:https://api.openai.com/v1}")
     private String apiUrl;
 
     private final ObjectMapper objectMapper;
@@ -171,6 +171,8 @@ public class CaptionAIService {
             case ESTETICA -> "Estética facial e corporal";
             case DEPILACAO -> "Depilação";
             case BARBA -> "Barbearia e cuidados masculinos";
+            case SOBRANCELHA -> "Design de sobrancelhas";
+            case MASSAGEM -> "Massagem terapêutica e relaxante";
             case OUTRO -> "Serviços de beleza diversos";
         };
     }

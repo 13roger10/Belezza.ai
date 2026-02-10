@@ -31,10 +31,10 @@ public class WhatsAppServiceImpl implements WhatsAppService {
     private final ObjectMapper objectMapper;
     private final WhatsAppMessageRepository messageRepository;
 
-    @Value("${whatsapp.phone-number-id}")
+    @Value("${whatsapp.phone-number-id:}")
     private String phoneNumberId;
 
-    @Value("${whatsapp.access-token}")
+    @Value("${whatsapp.access-token:}")
     private String accessToken;
 
     @Value("${whatsapp.api-version:v18.0}")
@@ -187,6 +187,9 @@ public class WhatsAppServiceImpl implements WhatsAppService {
         String endereco,
         String linkConfirmacao
     ) {
+        // Gerar link de cancelamento a partir do link de confirmação
+        String linkCancelamento = linkConfirmacao.replace("/confirmar-agendamento/", "/cancelar-agendamento/");
+
         String mensagem = String.format(
             """
             Olá %s! 👋
@@ -196,11 +199,12 @@ public class WhatsAppServiceImpl implements WhatsAppService {
             💇 %s com %s
             📍 %s
 
-            Para cancelar ou reagendar: %s
+            ✅ Confirmar presença: %s
+            ❌ Cancelar agendamento: %s
 
             Aguardamos você!
             """,
-            nomeCliente, data, hora, servico, profissional, endereco, linkConfirmacao
+            nomeCliente, data, hora, servico, profissional, endereco, linkConfirmacao, linkCancelamento
         );
 
         return enviarMensagemDireta(telefone, mensagem);
@@ -215,6 +219,9 @@ public class WhatsAppServiceImpl implements WhatsAppService {
         String servico,
         String linkConfirmacao
     ) {
+        // Gerar link de cancelamento a partir do link de confirmação
+        String linkCancelamento = linkConfirmacao.replace("/confirmar-agendamento/", "/cancelar-agendamento/");
+
         String mensagem = String.format(
             """
             Olá %s! 🔔
@@ -223,11 +230,12 @@ public class WhatsAppServiceImpl implements WhatsAppService {
             📅 %s às %s
             💇 %s
 
-            Confirme sua presença: %s
+            ✅ Confirme sua presença: %s
+            ❌ Precisa cancelar? %s
 
             Até breve!
             """,
-            nomeCliente, data, hora, servico, linkConfirmacao
+            nomeCliente, data, hora, servico, linkConfirmacao, linkCancelamento
         );
 
         return enviarMensagemDireta(telefone, mensagem);
@@ -276,6 +284,41 @@ public class WhatsAppServiceImpl implements WhatsAppService {
             Sua opinião é muito importante para nós!
             """,
             nomeCliente, linkAvaliacao
+        );
+
+        return enviarMensagemDireta(telefone, mensagem);
+    }
+
+    @Override
+    public String enviarCancelamento(
+        String telefone,
+        String nomeCliente,
+        String data,
+        String hora,
+        String servico,
+        String motivoCancelamento,
+        String linkReagendar
+    ) {
+        String motivo = motivoCancelamento != null && !motivoCancelamento.isEmpty()
+            ? motivoCancelamento
+            : "Não informado";
+
+        String mensagem = String.format(
+            """
+            Olá %s! 😔
+
+            Seu agendamento foi cancelado:
+            📅 %s às %s
+            💇 %s
+
+            Motivo: %s
+
+            Que tal reagendar?
+            📅 %s
+
+            Esperamos vê-lo(a) em breve!
+            """,
+            nomeCliente, data, hora, servico, motivo, linkReagendar
         );
 
         return enviarMensagemDireta(telefone, mensagem);

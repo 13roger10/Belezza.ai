@@ -19,6 +19,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findBySalonIdAndStatus(Long salonId, StatusPost status, Pageable pageable);
 
+    // Methods with Salon entity
+    Page<Post> findBySalon(com.belezza.api.entity.Salon salon, Pageable pageable);
+
+    Page<Post> findBySalonAndStatus(com.belezza.api.entity.Salon salon, StatusPost status, Pageable pageable);
+
+    java.util.Optional<Post> findByIdAndSalon(Long id, com.belezza.api.entity.Salon salon);
+
     List<Post> findByCriadorId(Long criadorId);
 
     // Find posts scheduled for publishing

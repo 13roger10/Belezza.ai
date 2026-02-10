@@ -112,4 +112,26 @@ public interface WhatsAppService {
         String nomeCliente,
         String linkAvaliacao
     );
+
+    /**
+     * Send cancellation notification message.
+     *
+     * @param telefone Phone number
+     * @param nomeCliente Client name
+     * @param data Cancelled appointment date
+     * @param hora Cancelled appointment time
+     * @param servico Service name
+     * @param motivoCancelamento Cancellation reason
+     * @param linkReagendar Link to reschedule
+     * @return Message ID
+     */
+    String enviarCancelamento(
+        String telefone,
+        String nomeCliente,
+        String data,
+        String hora,
+        String servico,
+        String motivoCancelamento,
+        String linkReagendar
+    );
 }

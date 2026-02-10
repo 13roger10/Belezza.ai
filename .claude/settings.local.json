@@ -81,7 +81,14 @@
       "Bash(tee:*)",
       "Bash(test:*)",
       "Bash(wmic:*)",
-      "Bash(cmd.exe /c mvnw.cmd clean compile -DskipTests)"
+      "Bash(cmd.exe /c mvnw.cmd clean compile -DskipTests)",
+      "Bash($env:JAVA_HOME=\"C:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\\\\belezza-api\\\\tools\\\\jdk-21.0.4\")",
+      "Bash(./tools/apache-maven-3.9.6/bin/mvn.cmd compile:*)",
+      "Bash(JAVA_HOME=\"C:/Users/Rogerio Martins/Nova pasta/Belezza.ai/belezza-api/tools/jdk-21.0.4\")",
+      "Bash(\"$JAVA_HOME/bin/java\" -jar target/belezza-api-1.0.0-SNAPSHOT.jar --spring.profiles.active=test)",
+      "Bash(./mvnw spring-boot:run:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-21\":*)",
+      "Bash(./mvnw package:*)"
     ]
   }
 }

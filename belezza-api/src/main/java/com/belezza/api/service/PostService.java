@@ -335,21 +335,20 @@ public class PostService {
                 try {
                     ContaSocial conta = socialAccountService.getAccountByPlatform(salonId, plataforma);
 
-                    MetaGraphAPIService.PostMetrics metrics;
-
-                    if (plataforma == PlataformaSocial.INSTAGRAM) {
-                        // Would need to store platform-specific post IDs
-                        // For now, skip metrics sync
-                        continue;
-                    } else if (plataforma == PlataformaSocial.FACEBOOK) {
-                        // Same as above
+                    // Would need to store platform-specific post IDs
+                    // For now, skip metrics sync for all platforms
+                    if (plataforma == PlataformaSocial.INSTAGRAM ||
+                        plataforma == PlataformaSocial.FACEBOOK ||
+                        plataforma == PlataformaSocial.WHATSAPP_STATUS) {
                         continue;
                     }
 
-                    totalLikes += metrics.likes();
-                    totalComments += metrics.comments();
-                    totalShares += metrics.shares();
-                    totalReach += metrics.reach();
+                    // Future: Fetch metrics from Meta Graph API
+                    // MetaGraphAPIService.PostMetrics metrics = metaGraphAPIService.getPostMetrics(...);
+                    // totalLikes += metrics.likes();
+                    // totalComments += metrics.comments();
+                    // totalShares += metrics.shares();
+                    // totalReach += metrics.reach();
 
                 } catch (Exception e) {
                     log.warn("Failed to sync metrics from {}: {}", plataforma, e.getMessage());

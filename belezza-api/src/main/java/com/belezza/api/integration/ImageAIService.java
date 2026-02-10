@@ -28,16 +28,16 @@ public class ImageAIService {
     @Value("${belezza.ai.replicate.api-token:}")
     private String apiToken;
 
-    @Value("${belezza.ai.replicate.api-url}")
+    @Value("${belezza.ai.replicate.api-url:https://api.replicate.com/v1}")
     private String apiUrl;
 
-    @Value("${belezza.ai.replicate.models.enhance}")
+    @Value("${belezza.ai.replicate.models.enhance:}")
     private String enhanceModel;
 
-    @Value("${belezza.ai.replicate.models.remove-bg}")
+    @Value("${belezza.ai.replicate.models.remove-bg:}")
     private String removeBgModel;
 
-    @Value("${belezza.ai.replicate.models.upscale}")
+    @Value("${belezza.ai.replicate.models.upscale:}")
     private String upscaleModel;
 
     private final ObjectMapper objectMapper;
