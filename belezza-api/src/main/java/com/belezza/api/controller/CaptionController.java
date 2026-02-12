@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -108,4 +109,27 @@ public class CaptionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/styles")
+    @Operation(
+        summary = "Get available caption styles",
+        description = "Returns the list of available tones/styles for caption generation"
+    )
+    public ResponseEntity<List<CaptionStyle>> getAvailableStyles() {
+        List<CaptionStyle> styles = List.of(
+            new CaptionStyle("profissional", "Profissional", "Tom formal e sofisticado"),
+            new CaptionStyle("casual", "Casual", "Tom descontraído e amigável"),
+            new CaptionStyle("divertido", "Divertido", "Tom alegre com emojis e humor"),
+            new CaptionStyle("inspiracional", "Inspiracional", "Frases motivacionais e positivas"),
+            new CaptionStyle("informativo", "Informativo", "Foco em benefícios e detalhes"),
+            new CaptionStyle("promocional", "Promocional", "Foco em ofertas e chamadas para ação")
+        );
+
+        return ResponseEntity.ok(styles);
+    }
+
+    /**
+     * DTO for caption style options.
+     */
+    public record CaptionStyle(String code, String name, String description) {}
 }

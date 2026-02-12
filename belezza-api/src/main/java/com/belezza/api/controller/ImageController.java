@@ -193,6 +193,21 @@ public class ImageController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/generate-versions")
+    @Authenticated
+    @Operation(summary = "Generate image versions",
+               description = "Generate cropped versions for different social media platforms: " +
+                           "1:1 (Instagram Feed), 4:5 (Instagram Portrait), 9:16 (Stories/Reels), 16:9 (Facebook Cover)")
+    public ResponseEntity<ImageVersionsResponse> generateVersions(
+        @Parameter(description = "Salon ID") @RequestParam Long salonId,
+        @Parameter(description = "Image ID") @PathVariable Long id
+    ) {
+        log.info("Generate versions for image: {} in salon: {}", id, salonId);
+
+        ImageVersionsResponse response = imageService.generateVersions(salonId, id);
+        return ResponseEntity.ok(response);
+    }
+
     // Helper method to extract usuario ID from authentication
     private Long extractUsuarioId(UserDetails userDetails) {
         // This would be extracted from your custom UserDetails implementation

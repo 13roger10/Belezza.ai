@@ -95,7 +95,11 @@
       "Bash(JAVA_HOME=\"C:/Program Files/Java/jdk-21.0.10+7\" ./mvnw.cmd clean compile:*)",
       "Bash(cmd.exe /c \"cd /d C:\\\\belezza-api && mvnw.cmd clean compile\")",
       "Bash(docker:*)",
-      "Bash(\"C:\\\\Program Files\\\\Java\\\\jdk-21.0.10+7\\\\bin\\\\java.exe\":*)"
+      "Bash(\"C:\\\\Program Files\\\\Java\\\\jdk-21.0.10+7\\\\bin\\\\java.exe\":*)",
+      "Bash(mvnw.cmd compile:*)",
+      "Bash(C:belezza-apimvnw.cmd compile -DskipTests -q)",
+      "Bash(\"C:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\\\\belezza-api\\\\mvnw.cmd\" compile -DskipTests -q)",
+      "Bash(./mvnw.cmd compile:*)"
     ]
   }
 }

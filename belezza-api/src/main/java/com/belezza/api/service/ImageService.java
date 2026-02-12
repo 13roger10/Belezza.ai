@@ -9,6 +9,8 @@ import com.belezza.api.integration.S3Service;
 import com.belezza.api.repository.ImagemRepository;
 import com.belezza.api.repository.SalonRepository;
 import com.belezza.api.repository.UsuarioRepository;
+import com.belezza.api.util.ImageProcessor;
+import com.belezza.api.util.ImageProcessor.AspectRatio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,9 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +42,7 @@ public class ImageService {
     private final UsuarioRepository usuarioRepository;
     private final S3Service s3Service;
     private final ImageAIService imageAIService;
+    private final ImageProcessor imageProcessor;
 
     private static final List<String> ALLOWED_TYPES = Arrays.asList(
         "image/jpeg", "image/jpg", "image/png", "image/webp"
@@ -68,8 +71,9 @@ public class ImageService {
             String s3Key = s3Service.uploadFile(file, "originals/");
             String urlOriginal = s3Service.getPublicUrl(s3Key);
 
-            // Generate thumbnail
-            String thumbnailKey = s3Service.uploadFile(file, "thumbnails/");
+            // Generate and upload real thumbnail (300x300 center crop)
+            byte[] thumbnailData = imageProcessor.generateThumbnail(file);
+            String thumbnailKey = s3Service.uploadBytes(thumbnailData, "image/jpeg", "thumbnails/");
             String thumbnailUrl = s3Service.getPublicUrl(thumbnailKey);
 
             // Get image dimensions
@@ -303,6 +307,86 @@ public class ImageService {
         imagemRepository.save(imagem);
 
         log.info("Image deleted (soft): {}", imagemId);
+    }
+
+    /**
+     * Generate cropped versions for different social media platforms.
+     * Creates versions for: Instagram Feed (1:1), Instagram Portrait (4:5),
+     * Stories/Reels (9:16), and Facebook Cover (16:9).
+     */
+    public ImageVersionsResponse generateVersions(Long salonId, Long imagemId) {
+        Imagem imagem = getImagemBySalonAndId(salonId, imagemId);
+
+        try {
+            // Download current image from URL
+            byte[] imageData = downloadImage(imagem.getUrlAtual());
+            String contentType = imagem.getTipoMime();
+
+            Map<String, ImageVersionsResponse.ImageVersionInfo> versions = new LinkedHashMap<>();
+
+            // Generate each aspect ratio version
+            for (AspectRatio ratio : AspectRatio.values()) {
+                try {
+                    byte[] croppedData = imageProcessor.cropToRatio(imageData, contentType, ratio);
+                    ImageProcessor.ImageDimensions dimensions = imageProcessor.getDimensions(croppedData);
+
+                    // Upload to S3
+                    String key = s3Service.uploadBytes(croppedData, "image/jpeg", "edited/");
+                    String url = s3Service.getPublicUrl(key);
+
+                    // Create version info
+                    ImageVersionsResponse.ImageVersionInfo versionInfo = ImageVersionsResponse.ImageVersionInfo.builder()
+                        .url(url)
+                        .width(dimensions.width())
+                        .height(dimensions.height())
+                        .aspectRatio(ratio.name().toLowerCase())
+                        .platform(ratio.getDescription())
+                        .build();
+
+                    versions.put(ratio.name().toLowerCase(), versionInfo);
+
+                    // Save as image version
+                    String params = "{\"aspectRatio\": \"" + ratio.name() + "\", \"platform\": \"" + ratio.getDescription() + "\"}";
+                    ImagemVersao versao = ImagemVersao.builder()
+                        .url(url)
+                        .operacao("crop")
+                        .parametros(params)
+                        .tamanhoBytes((long) croppedData.length)
+                        .largura(dimensions.width())
+                        .altura(dimensions.height())
+                        .numeroVersao(imagem.getTotalVersoes() + 1)
+                        .build();
+                    imagem.addVersao(versao);
+
+                    log.debug("Generated {} version for image {}", ratio.name(), imagemId);
+
+                } catch (Exception e) {
+                    log.warn("Failed to generate {} version: {}", ratio.name(), e.getMessage());
+                }
+            }
+
+            imagemRepository.save(imagem);
+
+            log.info("Generated {} versions for image {}", versions.size(), imagemId);
+
+            return ImageVersionsResponse.builder()
+                .imageId(imagemId)
+                .versions(versions)
+                .build();
+
+        } catch (Exception e) {
+            log.error("Error generating versions: {}", e.getMessage(), e);
+            throw new BusinessException("Failed to generate image versions: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Download image from URL.
+     */
+    private byte[] downloadImage(String imageUrl) throws IOException {
+        try (var inputStream = URI.create(imageUrl).toURL().openStream()) {
+            return inputStream.readAllBytes();
+        }
     }
 
     // Helper methods
