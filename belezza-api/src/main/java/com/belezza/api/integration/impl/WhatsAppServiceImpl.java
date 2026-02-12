@@ -31,16 +31,16 @@ public class WhatsAppServiceImpl implements WhatsAppService {
     private final ObjectMapper objectMapper;
     private final WhatsAppMessageRepository messageRepository;
 
-    @Value("${whatsapp.phone-number-id:}")
+    @Value("${belezza.whatsapp.phone-number-id:}")
     private String phoneNumberId;
 
-    @Value("${whatsapp.access-token:}")
+    @Value("${belezza.whatsapp.access-token:}")
     private String accessToken;
 
-    @Value("${whatsapp.api-version:v18.0}")
+    @Value("${belezza.whatsapp.api-version:v18.0}")
     private String apiVersion;
 
-    @Value("${whatsapp.api-url:https://graph.facebook.com}")
+    @Value("${belezza.whatsapp.api-url:https://graph.facebook.com}")
     private String apiUrl;
 
     @Override
@@ -100,6 +100,10 @@ public class WhatsAppServiceImpl implements WhatsAppService {
 
     @Override
     public String enviarMensagemDireta(String telefone, String mensagem) {
+        String messageId = null;
+        boolean success = false;
+        String errorMsg = null;
+
         try {
             String url = String.format("%s/%s/%s/messages", apiUrl, apiVersion, phoneNumberId);
 
@@ -119,19 +123,29 @@ public class WhatsAppServiceImpl implements WhatsAppService {
                 Map<String, Object> body = response.getBody();
                 List<Map<String, String>> messages = (List<Map<String, String>>) body.get("messages");
                 if (messages != null && !messages.isEmpty()) {
-                    String messageId = messages.get(0).get("id");
+                    messageId = messages.get(0).get("id");
+                    success = true;
                     log.info("Mensagem direta enviada com sucesso. ID: {}", messageId);
-                    return messageId;
                 }
             }
 
-            log.warn("Resposta inesperada da API WhatsApp: {}", response.getBody());
-            return null;
+            if (!success) {
+                log.warn("Resposta inesperada da API WhatsApp: {}", response.getBody());
+            }
 
         } catch (RestClientException e) {
+            errorMsg = e.getMessage();
             log.error("Erro ao enviar mensagem direta WhatsApp: {}", e.getMessage(), e);
-            throw new RuntimeException("Falha ao enviar mensagem direta WhatsApp", e);
+        } finally {
+            // Salvar log da mensagem no banco de dados
+            saveMessageLogSimple(messageId, telefone, "text", null, mensagem, success, errorMsg);
         }
+
+        if (!success && errorMsg != null) {
+            throw new RuntimeException("Falha ao enviar mensagem direta WhatsApp: " + errorMsg);
+        }
+
+        return messageId;
     }
 
     @Override
@@ -381,6 +395,37 @@ public class WhatsAppServiceImpl implements WhatsAppService {
 
             messageRepository.save(message);
             log.debug("Mensagem WhatsApp registrada no banco: {}", messageId);
+        } catch (Exception e) {
+            log.error("Erro ao salvar log de mensagem WhatsApp: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Save message log to database (simplified version without Agendamento/Salon).
+     */
+    private void saveMessageLogSimple(
+        String messageId,
+        String telefone,
+        String tipo,
+        String templateName,
+        String conteudo,
+        boolean success,
+        String errorMessage
+    ) {
+        try {
+            WhatsAppMessage message = WhatsAppMessage.builder()
+                .messageId(messageId)
+                .telefone(normalizarTelefone(telefone))
+                .tipo(tipo)
+                .templateName(templateName)
+                .conteudo(conteudo != null && conteudo.length() > 4000 ? conteudo.substring(0, 4000) : conteudo)
+                .status(success ? WhatsAppMessageStatus.SENT : WhatsAppMessageStatus.FAILED)
+                .errorMessage(errorMessage)
+                .tentativas(1)
+                .build();
+
+            messageRepository.save(message);
+            log.debug("Mensagem WhatsApp registrada no banco: {} - Status: {}", messageId, success ? "SENT" : "FAILED");
         } catch (Exception e) {
             log.error("Erro ao salvar log de mensagem WhatsApp: {}", e.getMessage(), e);
         }

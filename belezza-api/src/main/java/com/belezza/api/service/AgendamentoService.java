@@ -105,6 +105,9 @@ public class AgendamentoService {
 
         log.info("Agendamento criado: {} para {} em {}", agendamento.getId(), emailCliente, request.getDataHora());
 
+        // Enviar confirmação via WhatsApp
+        enviarNotificacaoConfirmacao(agendamento);
+
         return AgendamentoResponse.fromEntity(agendamento);
     }
 
@@ -182,6 +185,9 @@ public class AgendamentoService {
 
         log.info("Agendamento com múltiplos serviços criado: {} para {} em {}",
             agendamento.getId(), emailCliente, request.getDataHora());
+
+        // Enviar confirmação via WhatsApp
+        enviarNotificacaoConfirmacao(agendamento);
 
         return AgendamentoResponse.fromEntity(agendamento);
     }
@@ -305,6 +311,9 @@ public class AgendamentoService {
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
         agendamento = agendamentoRepository.save(agendamento);
         log.info("Agendamento concluído: {}", id);
+
+        // Enviar mensagem de pós-atendimento via WhatsApp
+        enviarNotificacaoPosAtendimento(agendamento);
 
         return AgendamentoResponse.fromEntity(agendamento);
     }
@@ -497,6 +506,90 @@ public class AgendamentoService {
             case SATURDAY -> DiaSemana.SABADO;
             case SUNDAY -> DiaSemana.DOMINGO;
         };
+    }
+
+    /**
+     * Send WhatsApp confirmation notification to client after appointment creation.
+     */
+    private void enviarNotificacaoConfirmacao(Agendamento agendamento) {
+        try {
+            Cliente cliente = agendamento.getCliente();
+            if (cliente == null || cliente.getUsuario() == null || cliente.getUsuario().getTelefone() == null) {
+                log.debug("Cliente sem telefone para notificação de confirmação - agendamento {}", agendamento.getId());
+                return;
+            }
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            String nomeCliente = cliente.getUsuario().getNome() != null ? cliente.getUsuario().getNome() : "Cliente";
+            String data = agendamento.getDataHora().format(dateFormatter);
+            String hora = agendamento.getDataHora().format(timeFormatter);
+
+            // Get service name (from single service or first service in list)
+            String servico = "Serviço";
+            if (agendamento.getServico() != null) {
+                servico = agendamento.getServico().getNome();
+            } else if (agendamento.getServicos() != null && !agendamento.getServicos().isEmpty()) {
+                servico = agendamento.getServicos().stream()
+                    .map(as -> as.getServico().getNome())
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("Serviço");
+            }
+
+            String profissional = "Profissional";
+            if (agendamento.getProfissional() != null && agendamento.getProfissional().getUsuario() != null) {
+                profissional = agendamento.getProfissional().getUsuario().getNome();
+            }
+
+            Salon salon = agendamento.getSalon();
+            String endereco = salon.getEndereco() != null ? salon.getEndereco() : salon.getNome();
+
+            String linkConfirmacao = frontendUrl + "/confirmar-agendamento/" + agendamento.getTokenConfirmacao();
+
+            whatsAppService.enviarConfirmacaoAgendamento(
+                cliente.getUsuario().getTelefone(),
+                nomeCliente,
+                data,
+                hora,
+                servico,
+                profissional,
+                endereco,
+                linkConfirmacao
+            );
+
+            log.info("Notificação de confirmação enviada para agendamento {}", agendamento.getId());
+        } catch (Exception e) {
+            log.error("Erro ao enviar notificação de confirmação: {}", e.getMessage(), e);
+            // Não propagar erro - agendamento já foi criado
+        }
+    }
+
+    /**
+     * Send WhatsApp post-appointment notification to client.
+     */
+    private void enviarNotificacaoPosAtendimento(Agendamento agendamento) {
+        try {
+            Cliente cliente = agendamento.getCliente();
+            if (cliente == null || cliente.getUsuario() == null || cliente.getUsuario().getTelefone() == null) {
+                log.warn("Cliente sem telefone para notificação pós-atendimento - agendamento {}", agendamento.getId());
+                return;
+            }
+
+            String nomeCliente = cliente.getUsuario().getNome() != null ? cliente.getUsuario().getNome() : "Cliente";
+            String linkAvaliacao = frontendUrl + "/avaliar/" + agendamento.getTokenConfirmacao();
+
+            whatsAppService.enviarPosAtendimento(
+                cliente.getUsuario().getTelefone(),
+                nomeCliente,
+                linkAvaliacao
+            );
+
+            log.info("Notificação pós-atendimento enviada para agendamento {}", agendamento.getId());
+        } catch (Exception e) {
+            log.error("Erro ao enviar notificação pós-atendimento: {}", e.getMessage(), e);
+            // Não propagar erro - conclusão já foi realizada
+        }
     }
 
     /**

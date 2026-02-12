@@ -190,6 +190,8 @@ belezza:
     webhook-verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:}
     api-version: v18.0
     api-url: https://graph.facebook.com
+    retry:
+      enabled: ${WHATSAPP_RETRY_ENABLED:true}
 
   # Meta Graph API Configuration (Instagram/Facebook)
   meta:

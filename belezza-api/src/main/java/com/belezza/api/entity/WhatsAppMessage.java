@@ -99,6 +99,7 @@ public class WhatsAppMessage {
     /**
      * Number of retry attempts.
      */
+    @Builder.Default
     @Column(nullable = false)
     private int tentativas = 0;
 
