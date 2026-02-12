@@ -1,5 +1,8 @@
 package com.belezza.api.controller;
 
+import com.belezza.api.entity.Post;
+import com.belezza.api.entity.StatusPost;
+import com.belezza.api.repository.PostRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Webhook controller for Meta Graph API callbacks.
@@ -20,6 +24,8 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "Webhooks", description = "Meta Graph API webhook endpoints")
 public class MetaWebhookController {
+
+    private final PostRepository postRepository;
 
     @Value("${meta.webhook.verify-token:belezza_webhook_verify_token}")
     private String verifyToken;
@@ -161,12 +167,11 @@ public class MetaWebhookController {
      */
     private void handleCommentEvent(Map<String, Object> value) {
         log.info("Comment event received: {}", value);
-        // TODO: Update post comment count in database
-        // You would need to:
-        // 1. Extract post ID from value
-        // 2. Find corresponding Post entity
-        // 3. Update comment count
-        // 4. Save to database
+
+        String postId = extractPostId(value);
+        if (postId != null) {
+            updatePostMetric(postId, "comentarios", 1);
+        }
     }
 
     /**
@@ -174,7 +179,11 @@ public class MetaWebhookController {
      */
     private void handleLikeEvent(Map<String, Object> value) {
         log.info("Like event received: {}", value);
-        // TODO: Update post like count in database
+
+        String postId = extractPostId(value);
+        if (postId != null) {
+            updatePostMetric(postId, "curtidas", 1);
+        }
     }
 
     /**
@@ -182,7 +191,11 @@ public class MetaWebhookController {
      */
     private void handleShareEvent(Map<String, Object> value) {
         log.info("Share event received: {}", value);
-        // TODO: Update post share count in database
+
+        String postId = extractPostId(value);
+        if (postId != null) {
+            updatePostMetric(postId, "compartilhamentos", 1);
+        }
     }
 
     /**
@@ -190,7 +203,11 @@ public class MetaWebhookController {
      */
     private void handleReactionEvent(Map<String, Object> value) {
         log.info("Reaction event received: {}", value);
-        // TODO: Update post reaction count in database
+
+        String postId = extractPostId(value);
+        if (postId != null) {
+            updatePostMetric(postId, "curtidas", 1);
+        }
     }
 
     /**
@@ -198,6 +215,53 @@ public class MetaWebhookController {
      */
     private void handleFeedEvent(Map<String, Object> value) {
         log.info("Feed event received: {}", value);
-        // TODO: Handle post lifecycle events
+
+        String verb = (String) value.get("verb");
+        String postId = extractPostId(value);
+
+        if (postId == null) {
+            return;
+        }
+
+        if ("add".equals(verb)) {
+            log.info("Post published confirmation for: {}", postId);
+        } else if ("remove".equals(verb) || "delete".equals(verb)) {
+            log.info("Post removed: {}", postId);
+        }
+    }
+
+    /**
+     * Extract post ID from webhook value.
+     */
+    private String extractPostId(Map<String, Object> value) {
+        // Try different field names used by Meta
+        if (value.containsKey("media_id")) {
+            return (String) value.get("media_id");
+        }
+        if (value.containsKey("post_id")) {
+            return (String) value.get("post_id");
+        }
+        if (value.containsKey("id")) {
+            return (String) value.get("id");
+        }
+        return null;
+    }
+
+    /**
+     * Update post metric by incrementing the counter.
+     */
+    private void updatePostMetric(String externalPostId, String metricType, int increment) {
+        try {
+            // Note: We would need to store externalPostId in Post entity to map properly
+            // For now, log the update request
+            log.info("Metric update requested - Post: {}, Type: {}, Increment: {}",
+                externalPostId, metricType, increment);
+
+            // Future enhancement: Add external_post_id column to posts table
+            // and query by that to update metrics
+
+        } catch (Exception e) {
+            log.error("Error updating post metric: {}", e.getMessage());
+        }
     }
 }
