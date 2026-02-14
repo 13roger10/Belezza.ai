@@ -226,8 +226,8 @@ export function RichCaptionEditor({
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className={`rounded-lg p-2 transition-colors ${
                 showEmojiPicker
-                  ? "bg-violet-100 text-violet-600"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  ? "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
               }`}
               title="Inserir emoji"
             >
@@ -254,7 +254,7 @@ export function RichCaptionEditor({
           <button
             type="button"
             onClick={insertLineBreak}
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-2 text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
             title="Inserir quebra de linha"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,8 +273,8 @@ export function RichCaptionEditor({
             onClick={toggleBulletMode}
             className={`rounded-lg p-2 transition-colors ${
               bulletModeActive
-                ? "bg-violet-100 text-violet-600"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                ? "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
             title={bulletModeActive ? "Desativar bullet points" : "Ativar bullet points"}
           >
@@ -288,7 +288,7 @@ export function RichCaptionEditor({
             </svg>
           </button>
 
-          <div className="mx-2 h-6 w-px bg-gray-200" />
+          <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-700" />
 
           {/* Quick Inserts */}
           {quickInserts.map((insert) => (
@@ -296,7 +296,7 @@ export function RichCaptionEditor({
               key={insert.label}
               type="button"
               onClick={() => insertAtCursor(insert.text)}
-              className="rounded-lg px-2 py-1 text-lg transition-colors hover:bg-gray-100"
+              className="rounded-lg px-2 py-1 text-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
               title={insert.title}
             >
               {insert.label}
@@ -333,12 +333,12 @@ export function RichCaptionEditor({
           onSelect={handleSelect}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`min-h-[180px] w-full resize-none rounded-xl border p-4 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+          className={`min-h-[180px] w-full resize-none rounded-xl border p-4 text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ${
             isAtLimit
-              ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+              ? "border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500/20"
               : isNearLimit
-              ? "border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500/20"
-              : "border-gray-200 focus:border-violet-500 focus:ring-violet-500/20"
+              ? "border-yellow-300 dark:border-yellow-600 focus:border-yellow-500 focus:ring-yellow-500/20"
+              : "border-gray-200 dark:border-gray-600 focus:border-violet-500 focus:ring-violet-500/20"
           }`}
           maxLength={effectiveMaxLength}
         />
@@ -347,10 +347,10 @@ export function RichCaptionEditor({
         <div
           className={`absolute bottom-3 right-3 rounded-full px-2 py-0.5 text-xs font-medium ${
             isAtLimit
-              ? "bg-red-100 text-red-700"
+              ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400"
               : isNearLimit
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-gray-100 text-gray-600"
+              ? "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
           }`}
         >
           {charCount}/{effectiveMaxLength}
@@ -358,23 +358,23 @@ export function RichCaptionEditor({
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-4">
           <span>{wordCount} palavras</span>
           <span>{lineCount} linhas</span>
         </div>
         <div className="flex items-center gap-2">
           {platform !== "both" && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5">
+            <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5">
               {platform === "instagram" ? "Instagram" : "Facebook"}
             </span>
           )}
           {platform === "both" && (
             <>
-              <span className="rounded-full bg-pink-100 px-2 py-0.5 text-pink-700">
+              <span className="rounded-full bg-pink-100 dark:bg-pink-900/50 px-2 py-0.5 text-pink-700 dark:text-pink-400">
                 Instagram
               </span>
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-blue-700">
+              <span className="rounded-full bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 text-blue-700 dark:text-blue-400">
                 Facebook
               </span>
             </>
@@ -384,10 +384,10 @@ export function RichCaptionEditor({
 
       {/* Platform specific tips */}
       {isNearLimit && (
-        <div className={`rounded-lg p-3 ${isAtLimit ? "bg-red-50" : "bg-yellow-50"}`}>
+        <div className={`rounded-lg p-3 ${isAtLimit ? "bg-red-50 dark:bg-red-900/20" : "bg-yellow-50 dark:bg-yellow-900/20"}`}>
           <div className="flex items-start gap-2">
             <svg
-              className={`h-4 w-4 mt-0.5 ${isAtLimit ? "text-red-500" : "text-yellow-500"}`}
+              className={`h-4 w-4 mt-0.5 ${isAtLimit ? "text-red-500 dark:text-red-400" : "text-yellow-500 dark:text-yellow-400"}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -399,7 +399,7 @@ export function RichCaptionEditor({
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            <p className={`text-sm ${isAtLimit ? "text-red-700" : "text-yellow-700"}`}>
+            <p className={`text-sm ${isAtLimit ? "text-red-700 dark:text-red-400" : "text-yellow-700 dark:text-yellow-400"}`}>
               {isAtLimit
                 ? "Limite de caracteres atingido. Remova texto para continuar."
                 : `Aproximando-se do limite de ${effectiveMaxLength} caracteres.`}

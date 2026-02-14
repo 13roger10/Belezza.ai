@@ -85,14 +85,14 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
   );
 
   return (
-    <div className="w-72 rounded-xl border border-gray-200 bg-white shadow-lg">
+    <div className="w-72 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-        <span className="text-sm font-medium text-gray-700">Emojis</span>
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Emojis</span>
         {onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -102,18 +102,18 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
       </div>
 
       {/* Search */}
-      <div className="border-b border-gray-100 px-3 py-2">
+      <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar emoji..."
-          className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
         />
       </div>
 
       {/* Categories */}
-      <div className="flex gap-1 border-b border-gray-100 px-2 py-2">
+      <div className="flex gap-1 border-b border-gray-100 dark:border-gray-700 px-2 py-2">
         {EMOJI_CATEGORIES.map((category) => (
           <button
             key={category.id}
@@ -121,8 +121,8 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             title={category.name}
             className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg transition-colors ${
               selectedCategory === category.id
-                ? "bg-violet-100 text-violet-600"
-                : "hover:bg-gray-100"
+                ? "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
           >
             {category.icon}
@@ -137,28 +137,28 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             <button
               key={`${emoji}-${index}`}
               onClick={() => handleEmojiClick(emoji)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition-colors hover:bg-gray-100"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {emoji}
             </button>
           ))}
         </div>
         {filteredEmojis.length === 0 && (
-          <div className="py-8 text-center text-sm text-gray-500">
+          <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Nenhum emoji encontrado
           </div>
         )}
       </div>
 
       {/* Frequently Used */}
-      <div className="border-t border-gray-100 px-3 py-2">
-        <p className="mb-2 text-xs font-medium text-gray-500">Mais usados</p>
+      <div className="border-t border-gray-100 dark:border-gray-700 px-3 py-2">
+        <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Mais usados</p>
         <div className="flex gap-1">
           {["✨", "💖", "🔥", "💅", "💇‍♀️", "😍", "❤️", "💫"].map((emoji) => (
             <button
               key={emoji}
               onClick={() => handleEmojiClick(emoji)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition-colors hover:bg-gray-100"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {emoji}
             </button>

@@ -226,14 +226,14 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
   );
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-lg">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h3 className="font-semibold text-gray-900">Templates de Texto</h3>
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 px-4 py-3">
+        <h3 className="font-semibold text-gray-900 dark:text-white">Templates de Texto</h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -243,26 +243,26 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
       </div>
 
       {/* Search */}
-      <div className="border-b border-gray-100 px-4 py-3">
+      <div className="border-b border-gray-100 dark:border-gray-700 px-4 py-3">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar templates..."
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
         />
       </div>
 
       {/* Categories */}
-      <div className="flex gap-2 overflow-x-auto border-b border-gray-100 px-4 py-3">
+      <div className="flex gap-2 overflow-x-auto border-b border-gray-100 dark:border-gray-700 px-4 py-3">
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
             className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
               selectedCategory === category
-                ? "bg-violet-100 text-violet-700"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-400"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
           >
             <span>{CATEGORY_ICONS[category]}</span>
@@ -277,22 +277,22 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
           {filteredTemplates.map((template) => (
             <div
               key={template.id}
-              className="group rounded-xl border border-gray-200 p-3 transition-colors hover:border-violet-300 hover:bg-violet-50"
+              className="group rounded-xl border border-gray-200 dark:border-gray-700 p-3 transition-colors hover:border-violet-300 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20"
             >
               <div className="mb-2 flex items-start justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">{template.name}</h4>
-                  <p className="text-xs text-gray-500">{template.description}</p>
+                  <h4 className="font-medium text-gray-900 dark:text-white">{template.name}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{template.description}</p>
                 </div>
                 <button
                   onClick={() => handleInsert(template)}
-                  className="rounded-lg bg-violet-100 px-3 py-1 text-sm font-medium text-violet-700 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-violet-200"
+                  className="rounded-lg bg-violet-100 dark:bg-violet-900/50 px-3 py-1 text-sm font-medium text-violet-700 dark:text-violet-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-violet-200 dark:hover:bg-violet-800"
                 >
                   Usar
                 </button>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
-                <p className="whitespace-pre-wrap text-xs text-gray-600 line-clamp-3">
+              <div className="rounded-lg bg-gray-50 dark:bg-gray-700/50 p-2">
+                <p className="whitespace-pre-wrap text-xs text-gray-600 dark:text-gray-400 line-clamp-3">
                   {template.content}
                 </p>
               </div>
@@ -302,7 +302,7 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
                   {template.variables.map((v, i) => (
                     <span
                       key={i}
-                      className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700"
+                      className="rounded bg-yellow-100 dark:bg-yellow-900/50 px-1.5 py-0.5 text-xs text-yellow-700 dark:text-yellow-400"
                     >
                       {v}
                     </span>
@@ -313,7 +313,7 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
           ))}
 
           {filteredTemplates.length === 0 && (
-            <div className="py-8 text-center text-sm text-gray-500">
+            <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
               Nenhum template encontrado
             </div>
           )}
@@ -321,8 +321,8 @@ export function TextTemplates({ onInsert, onClose }: TextTemplatesProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 px-4 py-3">
-        <p className="text-xs text-gray-500">
+      <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           💡 Clique em &quot;Usar&quot; para inserir o template na sua legenda
         </p>
       </div>

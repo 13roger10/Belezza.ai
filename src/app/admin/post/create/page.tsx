@@ -247,13 +247,13 @@ export default function CreatePostPage() {
       <div className="mx-auto max-w-6xl">
         {/* View Mode Toggle */}
         <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 rounded-lg bg-gray-100 p-1">
+          <div className="flex items-center gap-2 rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
             <button
               onClick={() => setViewMode("edit")}
               className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 viewMode === "edit"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <span className="flex items-center gap-2">
@@ -267,8 +267,8 @@ export default function CreatePostPage() {
               onClick={() => setViewMode("preview")}
               className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 viewMode === "preview"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <span className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function CreatePostPage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <span>{captionStats.charCount} caracteres</span>
             <span>{captionStats.wordCount} palavras</span>
             <span>{hashtags.length} hashtags</span>
@@ -295,7 +295,7 @@ export default function CreatePostPage() {
             <div className="lg:col-span-2">
               <div className="sticky top-6 space-y-4">
                 {/* Preview da imagem */}
-                <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+                <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm">
                   <div className="relative aspect-square w-full">
                     <Image
                       src={imageData}
@@ -336,8 +336,8 @@ export default function CreatePostPage() {
 
                   {/* Info da imagem */}
                   {uploadedImage && (
-                    <div className="border-t border-gray-100 px-4 py-2">
-                      <p className="text-xs text-gray-500">
+                    <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {uploadedImage.width} x {uploadedImage.height} px |{" "}
                         {(uploadedImage.size / 1024).toFixed(1)} KB
                       </p>
@@ -346,8 +346,8 @@ export default function CreatePostPage() {
                 </div>
 
                 {/* Titulo */}
-                <div className="rounded-2xl bg-white p-4 shadow-sm">
-                  <label className="mb-2 block font-semibold text-gray-900">
+                <div className="rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-sm">
+                  <label className="mb-2 block font-semibold text-gray-900 dark:text-white">
                     Titulo
                   </label>
                   <Input
@@ -356,14 +356,14 @@ export default function CreatePostPage() {
                     placeholder="Digite um titulo para seu post..."
                     maxLength={100}
                   />
-                  <p className="mt-1 text-right text-xs text-gray-500">
+                  <p className="mt-1 text-right text-xs text-gray-500 dark:text-gray-400">
                     {title.length}/100
                   </p>
                 </div>
 
                 {/* Plataforma */}
-                <div className="rounded-2xl bg-white p-4 shadow-sm">
-                  <label className="mb-3 block font-semibold text-gray-900">
+                <div className="rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-sm">
+                  <label className="mb-3 block font-semibold text-gray-900 dark:text-white">
                     Publicar em
                   </label>
                   <div className="flex gap-2">
@@ -389,8 +389,8 @@ export default function CreatePostPage() {
                         onClick={() => setPlatform(option.value)}
                         className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                           platform === option.value
-                            ? "border-violet-500 bg-violet-50 text-violet-700"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                            ? "border-violet-500 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400"
+                            : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500"
                         }`}
                       >
                         {option.icon}
@@ -405,13 +405,13 @@ export default function CreatePostPage() {
             {/* Right Column - Text Editing */}
             <div className="lg:col-span-3 space-y-6">
               {/* Section Tabs */}
-              <div className="flex items-center gap-2 rounded-lg bg-gray-100 p-1">
+              <div className="flex items-center gap-2 rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
                 <button
                   onClick={() => setActiveSection("caption")}
                   className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                     activeSection === "caption"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
                   Legenda
@@ -420,8 +420,8 @@ export default function CreatePostPage() {
                   onClick={() => setActiveSection("hashtags")}
                   className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                     activeSection === "hashtags"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
                   Hashtags ({hashtags.length})
@@ -431,12 +431,12 @@ export default function CreatePostPage() {
               {/* Legenda Section */}
               {activeSection === "caption" && (
                 <div className="space-y-4">
-                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                  <div className="rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-sm">
                     <div className="mb-3 flex items-center justify-between">
-                      <label className="font-semibold text-gray-900">Legenda</label>
+                      <label className="font-semibold text-gray-900 dark:text-white">Legenda</label>
                       <button
                         onClick={() => setShowTemplates(!showTemplates)}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
@@ -467,8 +467,8 @@ export default function CreatePostPage() {
 
               {/* Hashtags Section */}
               {activeSection === "hashtags" && (
-                <div className="rounded-2xl bg-white p-4 shadow-sm">
-                  <label className="mb-3 block font-semibold text-gray-900">
+                <div className="rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-sm">
+                  <label className="mb-3 block font-semibold text-gray-900 dark:text-white">
                     Gerenciar Hashtags
                   </label>
                   <HashtagManager
@@ -528,8 +528,8 @@ export default function CreatePostPage() {
               </div>
 
               {/* Info */}
-              <div className="rounded-xl border border-violet-100 bg-violet-50 p-4">
-                <p className="text-sm text-violet-700">
+              <div className="rounded-xl border border-violet-100 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-900/20 p-4">
+                <p className="text-sm text-violet-700 dark:text-violet-400">
                   <strong>Dica:</strong> Use a geracao por IA para criar legendas
                   otimizadas para engajamento nas redes sociais. Clique no botao
                   &quot;Gerar com IA&quot; na barra de ferramentas da legenda.

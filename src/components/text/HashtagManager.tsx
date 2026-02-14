@@ -193,18 +193,18 @@ export function HashtagManager({
   return (
     <div className="space-y-4">
       {/* Hashtag Input */}
-      <div className="rounded-xl border border-gray-200 bg-white p-3">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
         {/* Tags Display */}
         <div className="flex flex-wrap gap-2 mb-3">
           {hashtags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-3 py-1 text-sm font-medium text-violet-700"
+              className="inline-flex items-center gap-1 rounded-full bg-violet-100 dark:bg-violet-900/50 px-3 py-1 text-sm font-medium text-violet-700 dark:text-violet-400"
             >
               #{tag}
               <button
                 onClick={() => removeHashtag(tag)}
-                className="ml-1 rounded-full p-0.5 hover:bg-violet-200"
+                className="ml-1 rounded-full p-0.5 hover:bg-violet-200 dark:hover:bg-violet-800"
               >
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -220,7 +220,7 @@ export function HashtagManager({
               onKeyDown={handleInputKeyDown}
               onPaste={handlePaste}
               placeholder={hashtags.length === 0 ? "Digite hashtags..." : "Adicionar..."}
-              className="flex-1 min-w-[100px] border-none bg-transparent text-sm placeholder:text-gray-400 focus:outline-none"
+              className="flex-1 min-w-[100px] border-none bg-transparent text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none"
             />
           )}
         </div>
@@ -228,11 +228,11 @@ export function HashtagManager({
         {/* Counter & Warning */}
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <span className={isAtLimit ? "text-red-500" : isOverRecommended ? "text-yellow-600" : "text-gray-500"}>
+            <span className={isAtLimit ? "text-red-500 dark:text-red-400" : isOverRecommended ? "text-yellow-600 dark:text-yellow-400" : "text-gray-500 dark:text-gray-400"}>
               {hashtags.length}/{effectiveMaxHashtags} hashtags
             </span>
             {isOverRecommended && !isAtLimit && (
-              <span className="text-yellow-600">
+              <span className="text-yellow-600 dark:text-yellow-400">
                 (recomendado: {limits.recommendedHashtags})
               </span>
             )}
@@ -240,7 +240,7 @@ export function HashtagManager({
           {hashtags.length > 0 && (
             <button
               onClick={() => onChange([])}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               Limpar todas
             </button>
@@ -250,7 +250,7 @@ export function HashtagManager({
 
       {/* Category Selector */}
       <div>
-        <p className="mb-2 text-sm font-medium text-gray-700">Sugestoes por categoria</p>
+        <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Sugestoes por categoria</p>
         <div className="flex flex-wrap gap-2">
           {Object.keys(SUGGESTED_HASHTAGS).map((category) => (
             <button
@@ -259,7 +259,7 @@ export function HashtagManager({
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 selectedCategory === category
                   ? "bg-violet-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -269,8 +269,8 @@ export function HashtagManager({
       </div>
 
       {/* Suggestions */}
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-        <p className="mb-2 text-xs font-medium text-gray-500">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3">
+        <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
           Clique para adicionar
         </p>
         <div className="flex flex-wrap gap-2">
@@ -281,8 +281,8 @@ export function HashtagManager({
               disabled={isAtLimit}
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
                 isAtLimit
-                  ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-violet-300 hover:bg-violet-50"
+                  ? "cursor-not-allowed border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500"
+                  : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-violet-300 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30"
               }`}
             >
               <span>#{suggestion.tag}</span>
@@ -292,7 +292,7 @@ export function HashtagManager({
             </button>
           ))}
           {filteredSuggestions.length === 0 && (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               Todas as sugestoes ja foram adicionadas
             </span>
           )}
@@ -300,12 +300,12 @@ export function HashtagManager({
       </div>
 
       {/* Tips */}
-      <div className="rounded-lg bg-blue-50 p-3">
+      <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3">
         <div className="flex items-start gap-2">
-          <svg className="h-4 w-4 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-4 w-4 text-blue-500 dark:text-blue-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <div className="text-xs text-blue-700">
+          <div className="text-xs text-blue-700 dark:text-blue-400">
             <p className="font-medium">Dicas para hashtags:</p>
             <ul className="mt-1 list-disc list-inside space-y-0.5">
               <li>Use 3-5 hashtags relevantes para melhor alcance</li>
