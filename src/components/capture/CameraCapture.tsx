@@ -14,20 +14,29 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isMountedRef = useRef(true);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<FacingMode>("environment");
   const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
 
+  // Stop all tracks from current stream
+  const stopCurrentStream = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  }, []);
+
   const startCamera = useCallback(async (facing: FacingMode) => {
+    if (!isMountedRef.current) return;
+
     setIsLoading(true);
     setError(null);
 
-    // Parar stream anterior se existir
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-    }
+    // Stop previous stream
+    stopCurrentStream();
 
     try {
       const constraints: MediaStreamConstraints = {
@@ -40,42 +49,69 @@ export function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // Check if component is still mounted
+      if (!isMountedRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       streamRef.current = stream;
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+
+        // Handle play with proper error handling for AbortError
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          // Ignore AbortError - it's expected when component unmounts or stream changes
+          if (playError instanceof Error && playError.name === "AbortError") {
+            return;
+          }
+          throw playError;
+        }
       }
 
-      // Verificar se há múltiplas câmeras
+      // Check mounted state before updating state
+      if (!isMountedRef.current) return;
+
+      // Check for multiple cameras
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter((d) => d.kind === "videoinput");
-      setHasMultipleCameras(videoDevices.length > 1);
+
+      if (isMountedRef.current) {
+        setHasMultipleCameras(videoDevices.length > 1);
+      }
     } catch (err) {
+      if (!isMountedRef.current) return;
+
       console.error("Erro ao acessar câmera:", err);
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
           setError("Permissão negada. Por favor, permita o acesso à câmera.");
         } else if (err.name === "NotFoundError") {
           setError("Nenhuma câmera encontrada no dispositivo.");
-        } else {
+        } else if (err.name !== "AbortError") {
           setError("Erro ao acessar a câmera. Tente novamente.");
         }
       }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [stopCurrentStream]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     startCamera(facingMode);
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
+      isMountedRef.current = false;
+      stopCurrentStream();
     };
-  }, [facingMode, startCamera]);
+  }, [facingMode, startCamera, stopCurrentStream]);
 
   const handleCapture = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;

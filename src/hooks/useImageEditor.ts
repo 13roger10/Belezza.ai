@@ -1,6 +1,6 @@
 // Hook para gerenciamento de estado do editor de imagens - Fase 7 & 8
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type {
   EditorState,
   EditorTool,
@@ -36,7 +36,7 @@ const initialAIProcessingState: AIProcessingState = {
 
 export function useImageEditor(initialImage: string) {
   // Estado principal
-  const [originalImage] = useState<string>(initialImage);
+  const [originalImage, setOriginalImage] = useState<string>(initialImage);
   const [currentImage, setCurrentImage] = useState<string>(initialImage);
   const [selectedTool, setSelectedTool] = useState<EditorTool>("select");
   const [aiProcessing, setAIProcessing] = useState<AIProcessingState>(
@@ -58,6 +58,23 @@ export function useImageEditor(initialImage: string) {
     },
   ]);
   const [historyIndex, setHistoryIndex] = useState<number>(0);
+
+  // Sync state when initialImage changes (e.g., loaded from IndexedDB)
+  useEffect(() => {
+    if (initialImage && !currentImage) {
+      setOriginalImage(initialImage);
+      setCurrentImage(initialImage);
+      setHistory([
+        {
+          id: generateId(),
+          timestamp: Date.now(),
+          action: "initial",
+          imageData: initialImage,
+        },
+      ]);
+      setHistoryIndex(0);
+    }
+  }, [initialImage, currentImage]);
 
   // Ref para cancelar operações
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -528,12 +545,26 @@ export function useImageEditor(initialImage: string) {
 
   // Merge all overlays into the final image
   const mergeOverlaysToImage = useCallback(async (): Promise<string> => {
-    return new Promise((resolve) => {
+    if (!currentImage) {
+      throw new Error("No image to merge");
+    }
+
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
+
+      img.onerror = () => {
+        reject(new Error("Failed to load image for merging"));
+      };
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d")!;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Failed to get canvas context"));
+          return;
+        }
 
         canvas.width = img.width;
         canvas.height = img.height;

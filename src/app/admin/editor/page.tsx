@@ -317,12 +317,19 @@ export default function EditorPage() {
 
   const handleContinue = useCallback(async () => {
     try {
+      // Verify image exists
+      const imageToSave = editor.currentImage || initialImage;
+      if (!imageToSave) {
+        warning("Erro", "Nenhuma imagem para salvar");
+        return;
+      }
+
       // Flatten overlays before saving
       if (editor.textOverlays.length > 0 || editor.stickerOverlays.length > 0) {
         const mergedImage = await editor.mergeOverlaysToImage();
         await imageStorage.setItem("editedImage", mergedImage);
       } else {
-        await imageStorage.setItem("editedImage", editor.currentImage);
+        await imageStorage.setItem("editedImage", imageToSave);
       }
       success("Imagem salva", "Continuando para gerar legenda...");
       router.push("/admin/caption");
@@ -330,7 +337,7 @@ export default function EditorPage() {
       console.error("Failed to save image:", error);
       warning("Erro ao salvar", "Não foi possível salvar a imagem editada");
     }
-  }, [editor, router, success, warning]);
+  }, [editor, initialImage, router, success, warning]);
 
   const handleToolSelect = useCallback(
     (toolId: EditorToolType) => {
