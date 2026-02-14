@@ -5,6 +5,8 @@ import { AdminLayout } from "@/components/layout";
 import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   User,
   Bell,
@@ -65,40 +67,57 @@ const defaultSettings: UserSettings = {
   },
 };
 
+const THEME_KEY = "social_studio_theme";
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { success, error: showError } = useToast();
+  const { refreshSettings } = useSettings();
+  const { setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<"profile" | "notifications" | "preferences" | "security">("profile");
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Carregar configuracoes
+  // Carregar configuracoes uma vez na montagem
   useEffect(() => {
+    // Carregar tema diretamente do localStorage do ThemeContext
+    const savedTheme = (localStorage.getItem(THEME_KEY) as ThemeMode) || "light";
+
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setSettings((prev) => ({
-          ...prev,
+        setSettings({
+          ...defaultSettings,
           ...parsed,
+          preferences: {
+            ...defaultSettings.preferences,
+            ...parsed.preferences,
+            // Usar o tema salvo no ThemeContext
+            theme: savedTheme,
+          },
           profile: {
-            ...prev.profile,
+            ...defaultSettings.profile,
             ...parsed.profile,
             name: user?.name || parsed.profile?.name || "",
             email: user?.email || parsed.profile?.email || "",
           },
-        }));
+        });
       } catch {
         // Ignora erro
       }
-    } else if (user) {
+    } else {
       setSettings((prev) => ({
         ...prev,
+        preferences: {
+          ...prev.preferences,
+          theme: savedTheme,
+        },
         profile: {
           ...prev.profile,
-          name: user.name || "",
-          email: user.email || "",
+          name: user?.name || "",
+          email: user?.email || "",
         },
       }));
     }
@@ -110,8 +129,19 @@ export default function SettingsPage() {
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 
-      // Aplicar tema
-      applyTheme(settings.preferences.theme);
+      // Atualizar titulo da aplicacao com o nome do negocio
+      const businessName = settings.profile.businessName;
+      if (businessName && businessName.trim()) {
+        document.title = businessName;
+      } else {
+        document.title = "Social Studio IA";
+      }
+
+      // Disparar evento para atualizar o titulo em toda a aplicacao
+      window.dispatchEvent(new Event("titleUpdate"));
+
+      // Atualizar contexto global de settings
+      refreshSettings();
 
       success("Configuracoes salvas!", "Suas preferencias foram atualizadas");
       setHasChanges(false);
@@ -119,23 +149,6 @@ export default function SettingsPage() {
       showError("Erro ao salvar", "Tente novamente");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // Aplicar tema
-  const applyTheme = (theme: ThemeMode) => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else if (theme === "light") {
-      root.classList.remove("dark");
-    } else {
-      // System
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
     }
   };
 
@@ -259,6 +272,9 @@ export default function SettingsPage() {
                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="Seu salao/negocio"
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Este nome sera exibido como titulo da aplicacao
+                  </p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -399,7 +415,11 @@ export default function SettingsPage() {
                     return (
                       <button
                         key={theme.value}
-                        onClick={() => updateSettings("preferences", "theme", theme.value)}
+                        onClick={() => {
+                          updateSettings("preferences", "theme", theme.value);
+                          // Aplicar tema imediatamente para feedback visual
+                          setTheme(theme.value);
+                        }}
                         className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
                           settings.preferences.theme === theme.value
                             ? "border-violet-500 bg-violet-50 dark:bg-violet-900/30"

@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -50,6 +51,7 @@ const menuItems = [
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { businessName } = useSettings();
 
   const handleLogout = () => {
     logout();
@@ -91,7 +93,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
               </svg>
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white">Social Studio</span>
+            <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[140px]">{businessName}</span>
           </div>
           <button
             onClick={onClose}

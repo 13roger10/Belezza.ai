@@ -9,13 +9,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Social Studio IA",
   description: "Crie e publique posts incríveis para suas redes sociais com ajuda da IA",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Social Studio IA",
   },
   formatDetection: {
     telephone: false,

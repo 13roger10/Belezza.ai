@@ -6,6 +6,7 @@ import { ImagePlus, FileText, Calendar, TrendingUp, Clock, Eye, Bell } from "luc
 import Link from "next/link";
 import Image from "next/image";
 import { postService } from "@/services/post";
+import { useSettings } from "@/contexts/SettingsContext";
 import type { Post } from "@/types";
 
 interface DashboardStats {
@@ -16,6 +17,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { businessName } = useSettings();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
@@ -161,7 +163,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Boas-vindas */}
         <div className="rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 p-6 text-white">
-          <h2 className="text-2xl font-bold">Bem-vindo ao Social Studio IA!</h2>
+          <h2 className="text-2xl font-bold">Bem-vindo ao {businessName}!</h2>
           <p className="mt-2 text-violet-100">
             Crie posts incriveis para suas redes sociais com ajuda da
             Inteligencia Artificial.
