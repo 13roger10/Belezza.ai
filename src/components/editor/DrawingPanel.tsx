@@ -283,6 +283,11 @@ export function DrawingPanel({
     },
   ];
 
+  // Don't render if no valid image
+  if (!imageUrl) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
       {/* Header */}

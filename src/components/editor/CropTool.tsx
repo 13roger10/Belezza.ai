@@ -282,6 +282,11 @@ export function CropTool({
     img.src = imageUrl;
   }, [cropArea, imageUrl, onCrop]);
 
+  // Don't render if no valid image
+  if (!imageUrl) {
+    return null;
+  }
+
   const handleStyle = "w-3 h-3 bg-white border-2 border-violet-500 rounded-sm absolute";
 
   return (

@@ -42,6 +42,11 @@ export function InstagramPreview({
 
   const needsTruncation = formattedCaption.length > 125;
 
+  // Don't render if no valid image
+  if (!imageUrl) {
+    return null;
+  }
+
   // Renderizar hashtags com estilo
   const renderCaptionWithHashtags = (text: string) => {
     const parts = text.split(/(#\w+)/g);

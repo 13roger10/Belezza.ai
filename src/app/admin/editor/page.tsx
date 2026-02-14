@@ -581,20 +581,22 @@ export default function EditorPage() {
             ref={imageContainerRef}
             className="relative max-h-full max-w-full"
           >
-            <Image
-              src={editor.currentImage || initialImage}
-              alt="Imagem para editar"
-              width={800}
-              height={800}
-              className={`max-h-[55vh] w-auto rounded-lg object-contain transition-all ${getCurrentFilterClass()}`}
-              style={
-                editor.selectedTool === "adjust"
-                  ? getAdjustmentStyle()
-                  : undefined
-              }
-              priority
-              draggable={false}
-            />
+            {(editor.currentImage || initialImage) && (
+              <Image
+                src={editor.currentImage || initialImage}
+                alt="Imagem para editar"
+                width={800}
+                height={800}
+                className={`max-h-[55vh] w-auto rounded-lg object-contain transition-all ${getCurrentFilterClass()}`}
+                style={
+                  editor.selectedTool === "adjust"
+                    ? getAdjustmentStyle()
+                    : undefined
+                }
+                priority
+                draggable={false}
+              />
+            )}
 
             {/* Render Text Overlays */}
             {textOverlayElements}

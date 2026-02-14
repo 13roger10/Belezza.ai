@@ -45,6 +45,11 @@ export function FacebookPreview({
 
   const needsTruncation = formattedCaption.length > 200;
 
+  // Don't render if no valid image
+  if (!imageUrl) {
+    return null;
+  }
+
   // Renderizar hashtags com estilo do Facebook
   const renderCaptionWithHashtags = (text: string) => {
     const parts = text.split(/(#\w+)/g);

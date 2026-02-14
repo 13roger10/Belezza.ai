@@ -33,6 +33,11 @@ export function PreviewComparison({
     platform === "facebook" ? "facebook" : "instagram"
   );
 
+  // Don't render if no valid image
+  if (!imageUrl) {
+    return null;
+  }
+
   const handlePlatformChange = (newPlatform: Platform) => {
     if (newPlatform === "both") {
       setComparisonMode("side-by-side");
