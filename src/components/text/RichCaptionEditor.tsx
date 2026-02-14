@@ -24,6 +24,8 @@ export function RichCaptionEditor({
 }: RichCaptionEditorProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [_cursorPosition, setCursorPosition] = useState(0);
+  const [bulletModeActive, setBulletModeActive] = useState(false);
+  const [pendingBulletInsert, setPendingBulletInsert] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -109,15 +111,18 @@ export function RichCaptionEditor({
       const textarea = textareaRef.current;
       if (!textarea) return;
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
+      // If textarea is not focused, insert at the end
+      const isFocused = document.activeElement === textarea;
+      const start = isFocused ? textarea.selectionStart : value.length;
+      const end = isFocused ? textarea.selectionEnd : value.length;
       const newValue = value.substring(0, start) + text + value.substring(end);
 
       if (newValue.length <= effectiveMaxLength) {
         onChange(newValue);
         setTimeout(() => {
           textarea.focus();
-          textarea.setSelectionRange(start + text.length, start + text.length);
+          const newCursorPos = start + text.length;
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
         }, 0);
       }
     },
@@ -129,13 +134,80 @@ export function RichCaptionEditor({
     insertAtCursor("\n\n");
   }, [insertAtCursor]);
 
-  const insertBulletPoint = useCallback(() => {
-    insertAtCursor("\n• ");
-  }, [insertAtCursor]);
+  // Toggle bullet point mode
+  const toggleBulletMode = useCallback(() => {
+    if (!bulletModeActive) {
+      // Activating: set flag to insert bullet on next effect
+      setPendingBulletInsert(true);
+    }
+    setBulletModeActive((prev) => !prev);
+  }, [bulletModeActive]);
+
+  // Effect to insert bullet point when mode is activated
+  useEffect(() => {
+    if (pendingBulletInsert && bulletModeActive) {
+      setPendingBulletInsert(false);
+
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const isFocused = document.activeElement === textarea;
+      const start = isFocused ? textarea.selectionStart : value.length;
+      const end = isFocused ? textarea.selectionEnd : value.length;
+      const newValue = value.substring(0, start) + "\n• " + value.substring(end);
+
+      if (newValue.length <= effectiveMaxLength) {
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.focus();
+          const newCursorPos = start + 3;
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+      }
+    }
+  }, [pendingBulletInsert, bulletModeActive, value, onChange, effectiveMaxLength]);
+
+  // Handle keydown for bullet point continuation
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && bulletModeActive) {
+        e.preventDefault();
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const currentLine = value.substring(0, start).split("\n").pop() || "";
+
+        // Check if current line is empty bullet (just "• ")
+        if (currentLine.trim() === "•") {
+          // Remove empty bullet and deactivate bullet mode
+          const lineStart = start - currentLine.length;
+          const newValue = value.substring(0, lineStart) + value.substring(end);
+          onChange(newValue);
+          setBulletModeActive(false);
+          setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(lineStart, lineStart);
+          }, 0);
+        } else {
+          // Add new bullet point
+          const newValue = value.substring(0, start) + "\n• " + value.substring(end);
+          onChange(newValue);
+          setTimeout(() => {
+            textarea.focus();
+            const newPos = start + 3; // "\n• " = 3 characters
+            textarea.setSelectionRange(newPos, newPos);
+          }, 0);
+        }
+      }
+    },
+    [bulletModeActive, value, onChange]
+  );
 
   // Quick text inserts
   const quickInserts = [
-    { label: "📍", text: "📍 ", title: "Localização" },
+    { label: "📍", text: "\n\n📍 Localização: ", title: "Localização" },
     { label: "🔗", text: "\n\n🔗 Link na bio", title: "Link na bio" },
     { label: "📱", text: "\n\n📱 Agende pelo WhatsApp", title: "WhatsApp" },
     { label: "📞", text: "\n\n📞 Contato: ", title: "Contato" },
@@ -198,9 +270,13 @@ export function RichCaptionEditor({
           {/* Bullet Point Button */}
           <button
             type="button"
-            onClick={insertBulletPoint}
-            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            title="Inserir bullet point"
+            onClick={toggleBulletMode}
+            className={`rounded-lg p-2 transition-colors ${
+              bulletModeActive
+                ? "bg-violet-100 text-violet-600"
+                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            }`}
+            title={bulletModeActive ? "Desativar bullet points" : "Ativar bullet points"}
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -255,6 +331,7 @@ export function RichCaptionEditor({
           value={value}
           onChange={handleChange}
           onSelect={handleSelect}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={`min-h-[180px] w-full resize-none rounded-xl border p-4 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
             isAtLimit
