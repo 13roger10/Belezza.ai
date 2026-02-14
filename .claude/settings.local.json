@@ -101,7 +101,8 @@
       "Bash(\"C:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\\\\belezza-api\\\\mvnw.cmd\" compile -DskipTests -q)",
       "Bash(./mvnw.cmd compile:*)",
       "Bash(./mvnw compile:*)",
-      "Bash(cmd //c \"mvnw.cmd compile\")"
+      "Bash(cmd //c \"mvnw.cmd compile\")",
+      "Bash(.mvnw.cmd test-compile:*)"
     ]
   }
 }
