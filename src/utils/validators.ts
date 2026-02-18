@@ -171,18 +171,6 @@ export function isPastDate(date: Date): boolean {
 }
 
 /**
- * Validate if date is today
- */
-export function isToday(date: Date): boolean {
-  const today = new Date();
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  );
-}
-
-/**
  * Validate age (must be at least X years old)
  */
 export function isMinAge(birthDate: Date, minAge: number): boolean {

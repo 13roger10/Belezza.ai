@@ -80,11 +80,11 @@ async function fetchApi<T>(
 
 // HTTP methods
 export const api = {
-  get: <T>(endpoint: string, params?: Record<string, unknown>): Promise<T> => {
+  get: <T>(endpoint: string, params?: Record<string, unknown> | object): Promise<T> => {
     let url = endpoint;
     if (params) {
       const searchParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
+      Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           searchParams.append(key, String(value));
         }
