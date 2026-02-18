@@ -19,9 +19,9 @@ const statusLabels: Record<Post["status"], string> = {
 };
 
 const statusColors: Record<Post["status"], string> = {
-  draft: "bg-gray-100 text-gray-700",
-  scheduled: "bg-amber-100 text-amber-700",
-  published: "bg-green-100 text-green-700",
+  draft: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
+  scheduled: "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400",
+  published: "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400",
 };
 
 const platformIcons: Record<Post["platform"], string> = {
@@ -147,7 +147,7 @@ export default function PostsPage() {
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                     filter === status
                       ? "bg-violet-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
                   {status === "all" ? "Todos" : statusLabels[status]}
@@ -184,8 +184,8 @@ export default function PostsPage() {
 
         {/* Empty State */}
         {!isLoading && posts.length === 0 && (
-          <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-100">
+          <div className="rounded-2xl bg-white dark:bg-gray-800 p-12 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/50">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -201,10 +201,10 @@ export default function PostsPage() {
                 <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
               </svg>
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               Nenhum post encontrado
             </h3>
-            <p className="mb-6 text-gray-500">
+            <p className="mb-6 text-gray-500 dark:text-gray-400">
               {filter === "all"
                 ? "Comece criando seu primeiro post!"
                 : `Voce nao tem posts com status "${statusLabels[filter]}"`}
@@ -221,7 +221,7 @@ export default function PostsPage() {
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md"
+                className="overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm transition-shadow hover:shadow-md"
               >
                 {/* Imagem */}
                 <div className="relative aspect-square">
@@ -249,15 +249,15 @@ export default function PostsPage() {
 
                 {/* Conteudo */}
                 <div className="p-4">
-                  <h3 className="mb-1 truncate font-semibold text-gray-900">
+                  <h3 className="mb-1 truncate font-semibold text-gray-900 dark:text-white">
                     {post.title}
                   </h3>
-                  <p className="mb-3 line-clamp-2 text-sm text-gray-500">
+                  <p className="mb-3 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
                     {post.caption || "Sem legenda"}
                   </p>
 
                   {/* Data */}
-                  <div className="mb-4 text-xs text-gray-400">
+                  <div className="mb-4 text-xs text-gray-400 dark:text-gray-500">
                     {post.status === "published" && post.publishedAt
                       ? `Publicado em ${formatDate(post.publishedAt)}`
                       : post.status === "scheduled" && post.scheduledAt
@@ -279,7 +279,7 @@ export default function PostsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedPostForSchedule(post)}
-                          className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                          className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50"
                           title="Agendar"
                         >
                           <svg
@@ -332,7 +332,7 @@ export default function PostsPage() {
                       variant="ghost"
                       onClick={() => handleDelete(post.id)}
                       disabled={deletingId === post.id}
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300"
                       title="Excluir"
                     >
                       {deletingId === post.id ? (
@@ -362,8 +362,8 @@ export default function PostsPage() {
         )}
 
         {/* Info */}
-        <div className="rounded-xl border border-violet-100 bg-violet-50 p-4">
-          <p className="text-sm text-violet-700">
+        <div className="rounded-xl border border-violet-100 dark:border-violet-900 bg-violet-50 dark:bg-violet-900/20 p-4">
+          <p className="text-sm text-violet-700 dark:text-violet-400">
             <strong>Dica:</strong> Posts salvos como rascunho podem ser editados
             e publicados a qualquer momento.
           </p>
@@ -371,8 +371,8 @@ export default function PostsPage() {
 
         {/* Quick Link to Schedule */}
         <Link href="/admin/schedule">
-          <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
+          <div className="flex items-center gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 transition-shadow hover:shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -390,8 +390,8 @@ export default function PostsPage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Ver Calendario de Agendamentos</h3>
-              <p className="text-sm text-gray-500">Visualize e gerencie seus posts agendados</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Ver Calendario de Agendamentos</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Visualize e gerencie seus posts agendados</p>
             </div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -401,7 +401,7 @@ export default function PostsPage() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="ml-auto h-5 w-5 text-gray-400"
+              className="ml-auto h-5 w-5 text-gray-400 dark:text-gray-500"
             >
               <path d="M9 18l6-6-6-6" />
             </svg>

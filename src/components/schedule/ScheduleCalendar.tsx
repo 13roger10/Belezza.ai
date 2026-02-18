@@ -178,8 +178,8 @@ export function ScheduleCalendar({
     return (
       <div
         key={date.toISOString()}
-        className={`${isWeekView ? "min-h-[200px]" : "min-h-[100px]"} border-b border-r border-gray-100 p-1 ${
-          !isCurrentM ? "bg-gray-50" : ""
+        className={`${isWeekView ? "min-h-[200px]" : "min-h-[100px]"} border-b border-r border-gray-100 dark:border-gray-700 p-1 ${
+          !isCurrentM ? "bg-gray-50 dark:bg-gray-800/50" : ""
         }`}
         onClick={() => onDateClick?.(date)}
       >
@@ -190,14 +190,14 @@ export function ScheduleCalendar({
               isTodayDate
                 ? "bg-violet-500 text-white"
                 : !isCurrentM
-                  ? "text-gray-400"
-                  : "text-gray-700"
+                  ? "text-gray-400 dark:text-gray-600"
+                  : "text-gray-700 dark:text-gray-300"
             }`}
           >
             {date.getDate()}
           </span>
           {isWeekView && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 dark:text-gray-500">
               {WEEKDAYS[date.getDay()]}
             </span>
           )}
@@ -213,7 +213,7 @@ export function ScheduleCalendar({
                 setSelectedPost(post);
                 onPostClick?.(post);
               }}
-              className="group flex w-full items-center gap-1 rounded bg-violet-100 p-1 text-left transition-colors hover:bg-violet-200"
+              className="group flex w-full items-center gap-1 rounded bg-violet-100 dark:bg-violet-900/50 p-1 text-left transition-colors hover:bg-violet-200 dark:hover:bg-violet-800"
             >
               <div className="relative h-5 w-5 flex-shrink-0 overflow-hidden rounded">
                 <Image
@@ -223,13 +223,13 @@ export function ScheduleCalendar({
                   className="object-cover"
                 />
               </div>
-              <span className="truncate text-xs text-violet-700">
+              <span className="truncate text-xs text-violet-700 dark:text-violet-300">
                 {post.scheduledAt && formatTime(post.scheduledAt)}
               </span>
             </button>
           ))}
           {datePosts.length > (isWeekView ? 5 : 2) && (
-            <span className="block text-center text-xs text-gray-400">
+            <span className="block text-center text-xs text-gray-400 dark:text-gray-500">
               +{datePosts.length - (isWeekView ? 5 : 2)} mais
             </span>
           )}
@@ -264,20 +264,20 @@ export function ScheduleCalendar({
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevious}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          <h2 className="min-w-[200px] text-center text-lg font-semibold text-gray-900">
+          <h2 className="min-w-[200px] text-center text-lg font-semibold text-gray-900 dark:text-white">
             {periodTitle}
           </h2>
 
           <button
             onClick={goToNext}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -286,22 +286,22 @@ export function ScheduleCalendar({
 
           <button
             onClick={goToToday}
-            className="ml-2 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+            className="ml-2 rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Hoje
           </button>
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
+        <div className="flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
           {(["month", "week", "list"] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 viewMode === mode
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               {mode === "month" ? "Mes" : mode === "week" ? "Semana" : "Lista"}
@@ -312,13 +312,13 @@ export function ScheduleCalendar({
 
       {/* Stats */}
       <div className="flex flex-wrap gap-3">
-        <div className="rounded-lg bg-violet-100 px-3 py-1.5 text-sm">
-          <span className="text-violet-600">Agendados:</span>{" "}
-          <span className="font-semibold text-violet-700">{scheduledPosts.length}</span>
+        <div className="rounded-lg bg-violet-100 dark:bg-violet-900/50 px-3 py-1.5 text-sm">
+          <span className="text-violet-600 dark:text-violet-400">Agendados:</span>{" "}
+          <span className="font-semibold text-violet-700 dark:text-violet-300">{scheduledPosts.length}</span>
         </div>
-        <div className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm">
-          <span className="text-amber-600">Esta semana:</span>{" "}
-          <span className="font-semibold text-amber-700">
+        <div className="rounded-lg bg-amber-100 dark:bg-amber-900/50 px-3 py-1.5 text-sm">
+          <span className="text-amber-600 dark:text-amber-400">Esta semana:</span>{" "}
+          <span className="font-semibold text-amber-700 dark:text-amber-300">
             {scheduledPosts.filter((p) => {
               if (!p.scheduledAt) return false;
               const date = new Date(p.scheduledAt);
@@ -331,9 +331,9 @@ export function ScheduleCalendar({
             }).length}
           </span>
         </div>
-        <div className="rounded-lg bg-green-100 px-3 py-1.5 text-sm">
-          <span className="text-green-600">Hoje:</span>{" "}
-          <span className="font-semibold text-green-700">
+        <div className="rounded-lg bg-green-100 dark:bg-green-900/50 px-3 py-1.5 text-sm">
+          <span className="text-green-600 dark:text-green-400">Hoje:</span>{" "}
+          <span className="font-semibold text-green-700 dark:text-green-300">
             {scheduledPosts.filter((p) => {
               if (!p.scheduledAt) return false;
               return isToday(new Date(p.scheduledAt));
@@ -344,11 +344,11 @@ export function ScheduleCalendar({
 
       {/* Calendar Views */}
       {viewMode === "month" && (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {WEEKDAYS.map((day) => (
-              <div key={day} className="border-r border-gray-200 px-2 py-3 text-center text-xs font-semibold text-gray-500 last:border-r-0">
+              <div key={day} className="border-r border-gray-200 dark:border-gray-700 px-2 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 last:border-r-0">
                 {day}
               </div>
             ))}
@@ -362,21 +362,21 @@ export function ScheduleCalendar({
       )}
 
       {viewMode === "week" && (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {weekDays.map((date, index) => (
               <div
                 key={index}
-                className={`border-r border-gray-200 px-2 py-3 text-center last:border-r-0 ${
-                  isToday(date) ? "bg-violet-50" : ""
+                className={`border-r border-gray-200 dark:border-gray-700 px-2 py-3 text-center last:border-r-0 ${
+                  isToday(date) ? "bg-violet-50 dark:bg-violet-900/30" : ""
                 }`}
               >
-                <div className="text-xs font-semibold text-gray-500">
+                <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                   {WEEKDAYS_FULL[date.getDay()]}
                 </div>
                 <div className={`mt-1 text-lg font-semibold ${
-                  isToday(date) ? "text-violet-600" : "text-gray-900"
+                  isToday(date) ? "text-violet-600 dark:text-violet-400" : "text-gray-900 dark:text-white"
                 }`}>
                   {date.getDate()}
                 </div>
@@ -394,14 +394,14 @@ export function ScheduleCalendar({
       {viewMode === "list" && (
         <div className="space-y-3">
           {scheduledPosts.length === 0 ? (
-            <div className="rounded-xl bg-gray-50 p-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                <svg className="h-8 w-8 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="mb-2 font-semibold text-gray-900">Nenhum post agendado</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Nenhum post agendado</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Agende seus posts para manter uma presenca consistente nas redes sociais
               </p>
             </div>
@@ -415,7 +415,7 @@ export function ScheduleCalendar({
               .map((post) => (
                 <div
                   key={post.id}
-                  className="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+                  className="flex items-center gap-4 rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm transition-shadow hover:shadow-md"
                 >
                   {/* Image */}
                   <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
@@ -429,17 +429,17 @@ export function ScheduleCalendar({
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-gray-900">
+                    <h3 className="truncate font-semibold text-gray-900 dark:text-white">
                       {post.title}
                     </h3>
-                    <p className="truncate text-sm text-gray-500">
+                    <p className="truncate text-sm text-gray-500 dark:text-gray-400">
                       {post.caption || "Sem legenda"}
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-sm capitalize text-gray-600">
+                      <span className="text-sm capitalize text-gray-600 dark:text-gray-400">
                         {post.scheduledAt && formatFullDate(post.scheduledAt)}
                       </span>
                     </div>
@@ -447,7 +447,7 @@ export function ScheduleCalendar({
 
                   {/* Platform Badge */}
                   <div className="flex-shrink-0">
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                    <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300">
                       {post.platform === "both" ? "IG + FB" : post.platform === "instagram" ? "IG" : "FB"}
                     </span>
                   </div>
@@ -457,7 +457,7 @@ export function ScheduleCalendar({
                     {onPublishNow && (
                       <button
                         onClick={() => onPublishNow(post)}
-                        className="rounded-lg p-2 text-green-600 transition-colors hover:bg-green-50"
+                        className="rounded-lg p-2 text-green-600 dark:text-green-400 transition-colors hover:bg-green-50 dark:hover:bg-green-900/30"
                         title="Publicar agora"
                       >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -468,7 +468,7 @@ export function ScheduleCalendar({
                     {onCancelSchedule && (
                       <button
                         onClick={() => onCancelSchedule(post)}
-                        className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50"
+                        className="rounded-lg p-2 text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/30"
                         title="Cancelar agendamento"
                       >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -486,7 +486,7 @@ export function ScheduleCalendar({
       {/* Post Detail Modal */}
       {selectedPost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
             <div className="relative aspect-video">
               <Image
                 src={selectedPost.imageUrl}
@@ -504,13 +504,13 @@ export function ScheduleCalendar({
               </button>
             </div>
             <div className="p-4">
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                 {selectedPost.title}
               </h3>
-              <p className="mb-4 text-sm text-gray-500 line-clamp-3">
+              <p className="mb-4 text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
                 {selectedPost.caption || "Sem legenda"}
               </p>
-              <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+              <div className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -547,7 +547,7 @@ export function ScheduleCalendar({
                       onCancelSchedule(selectedPost);
                       setSelectedPost(null);
                     }}
-                    className="rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-200"
+                    className="rounded-lg bg-red-100 dark:bg-red-900/50 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-200 dark:hover:bg-red-900"
                   >
                     Cancelar
                   </button>

@@ -230,8 +230,8 @@ export default function PreviewPage() {
       <AdminLayout title="Preview">
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
-            <p className="text-gray-500">Carregando preview...</p>
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 dark:border-t-violet-400" />
+            <p className="text-gray-500 dark:text-gray-400">Carregando preview...</p>
           </div>
         </div>
       </AdminLayout>
@@ -244,25 +244,25 @@ export default function PreviewPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Preview do Post</h1>
-            <p className="mt-1 text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Preview do Post</h1>
+            <p className="mt-1 text-gray-500 dark:text-gray-400">
               Veja como seu post ficara nas redes sociais antes de publicar
             </p>
           </div>
 
           {/* Post Stats */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm">
-              <span className="text-gray-500">Caracteres:</span>{" "}
-              <span className="font-semibold text-gray-900">{postData.caption.length}</span>
+            <div className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm">
+              <span className="text-gray-500 dark:text-gray-400">Caracteres:</span>{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">{postData.caption.length}</span>
             </div>
-            <div className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm">
-              <span className="text-gray-500">Hashtags:</span>{" "}
-              <span className="font-semibold text-gray-900">{postData.hashtags.length}</span>
+            <div className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm">
+              <span className="text-gray-500 dark:text-gray-400">Hashtags:</span>{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">{postData.hashtags.length}</span>
             </div>
-            <div className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm">
-              <span className="text-gray-500">Plataforma:</span>{" "}
-              <span className="font-semibold text-gray-900">
+            <div className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm">
+              <span className="text-gray-500 dark:text-gray-400">Plataforma:</span>{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">
                 {postData.platform === "both" ? "Instagram + Facebook" : postData.platform === "instagram" ? "Instagram" : "Facebook"}
               </span>
             </div>
@@ -270,7 +270,7 @@ export default function PreviewPage() {
         </div>
 
         {/* Post Summary Card */}
-        <div className="rounded-2xl bg-white p-4 shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
               <Image
@@ -281,10 +281,10 @@ export default function PreviewPage() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                 {postData.title || "Sem titulo"}
               </h3>
-              <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                 {postData.caption || "Sem legenda"}
               </p>
               {postData.hashtags.length > 0 && (
@@ -292,13 +292,13 @@ export default function PreviewPage() {
                   {postData.hashtags.slice(0, 5).map((tag, index) => (
                     <span
                       key={index}
-                      className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700"
+                      className="rounded-full bg-violet-100 dark:bg-violet-900/50 px-2 py-0.5 text-xs font-medium text-violet-700 dark:text-violet-400"
                     >
                       #{tag}
                     </span>
                   ))}
                   {postData.hashtags.length > 5 && (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                    <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
                       +{postData.hashtags.length - 5} mais
                     </span>
                   )}
@@ -309,7 +309,7 @@ export default function PreviewPage() {
         </div>
 
         {/* Preview Comparison */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm">
           <PreviewComparison
             imageUrl={postData.imageData}
             caption={postData.caption}
@@ -320,14 +320,14 @@ export default function PreviewPage() {
 
         {/* Warning if no upload */}
         {!postData.uploadedImage && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
             <div className="flex items-start gap-3">
-              <svg className="h-5 w-5 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-5 w-5 flex-shrink-0 text-amber-500 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div>
-                <h4 className="font-semibold text-amber-900">Upload Pendente</h4>
-                <p className="mt-1 text-sm text-amber-700">
+                <h4 className="font-semibold text-amber-900 dark:text-amber-300">Upload Pendente</h4>
+                <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
                   A imagem ainda nao foi enviada para o servidor. Volte para a pagina de criacao para completar o upload antes de publicar.
                 </p>
               </div>
@@ -363,7 +363,7 @@ export default function PreviewPage() {
               variant="outline"
               onClick={() => setShowScheduleModal(true)}
               disabled={!postData.uploadedImage || isSaving || isPublishing || isScheduling}
-              className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+              className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

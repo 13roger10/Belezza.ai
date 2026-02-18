@@ -132,7 +132,7 @@ export default function CaptionPage() {
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 transition-colors hover:text-gray-900 dark:hover:text-white"
           >
             <svg
               className="h-5 w-5"
@@ -164,7 +164,7 @@ export default function CaptionPage() {
           {/* Preview da Imagem */}
           <div className="lg:col-span-2">
             <div className="sticky top-6">
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div className="overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm">
                 <div className="relative aspect-square w-full">
                   <Image
                     src={imageData}
@@ -176,21 +176,21 @@ export default function CaptionPage() {
 
                 {/* Selected Caption Preview */}
                 {selectedCaption && (
-                  <div className="border-t border-gray-100 p-4">
-                    <h4 className="mb-2 text-sm font-medium text-gray-500">
+                  <div className="border-t border-gray-100 dark:border-gray-700 p-4">
+                    <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                       Legenda selecionada:
                     </h4>
-                    <p className="whitespace-pre-wrap text-sm text-gray-800 line-clamp-4">
+                    <p className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 line-clamp-4">
                       {selectedCaption.text}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {selectedCaption.hashtags.slice(0, 3).map((tag, i) => (
-                        <span key={i} className="text-xs text-violet-600">
+                        <span key={i} className="text-xs text-violet-600 dark:text-violet-400">
                           {tag}
                         </span>
                       ))}
                       {selectedCaption.hashtags.length > 3 && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           +{selectedCaption.hashtags.length - 3}
                         </span>
                       )}
@@ -200,11 +200,11 @@ export default function CaptionPage() {
               </div>
 
               {/* Info Card */}
-              <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 p-4">
+              <div className="mt-4 rounded-xl border border-violet-100 dark:border-violet-900 bg-violet-50 dark:bg-violet-900/20 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-full bg-violet-100 p-2">
+                  <div className="rounded-full bg-violet-100 dark:bg-violet-900/50 p-2">
                     <svg
-                      className="h-5 w-5 text-violet-600"
+                      className="h-5 w-5 text-violet-600 dark:text-violet-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -218,10 +218,10 @@ export default function CaptionPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-medium text-violet-800">
+                    <h4 className="font-medium text-violet-800 dark:text-violet-300">
                       IA para Legendas
                     </h4>
-                    <p className="mt-1 text-sm text-violet-700">
+                    <p className="mt-1 text-sm text-violet-700 dark:text-violet-400">
                       Nossa IA gera legendas otimizadas para engajamento,
                       incluindo hashtags relevantes e chamadas para ação.
                     </p>
@@ -247,17 +247,17 @@ export default function CaptionPage() {
 
         {/* Progress Indicator - quando gerando */}
         {isGenerating && (
-          <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white p-4 shadow-lg">
+          <div className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-lg">
             <div className="mx-auto max-w-2xl">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
                       Gerando legendas com IA...
                     </span>
-                    <span className="text-violet-600">{progress}%</span>
+                    <span className="text-violet-600 dark:text-violet-400">{progress}%</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 transition-all duration-300"
                       style={{ width: `${progress}%` }}

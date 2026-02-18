@@ -81,8 +81,8 @@ export function CaptionGeneratorPanel({
   return (
     <div className="space-y-6">
       {/* Options Panel */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h3 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+      <div className="rounded-2xl bg-white dark:bg-gray-800 p-5 shadow-sm">
+        <h3 className="mb-4 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
           <svg
             className="h-5 w-5 text-violet-500"
             fill="none"
@@ -107,7 +107,7 @@ export function CaptionGeneratorPanel({
 
         {/* Category */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Categoria do conteúdo
           </label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
@@ -118,7 +118,7 @@ export function CaptionGeneratorPanel({
                 className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                   options.category === cat.id
                     ? "bg-violet-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
                 {cat.label}
@@ -129,7 +129,7 @@ export function CaptionGeneratorPanel({
 
         {/* Tone */}
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Tom da mensagem
           </label>
           <div className="flex flex-wrap gap-2">
@@ -140,7 +140,7 @@ export function CaptionGeneratorPanel({
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                   options.tone === tone.id
                     ? "bg-violet-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
                 {tone.label}
@@ -152,7 +152,7 @@ export function CaptionGeneratorPanel({
         {/* Length & Platform */}
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Tamanho
             </label>
             <div className="flex gap-2">
@@ -163,7 +163,7 @@ export function CaptionGeneratorPanel({
                   className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     options.length === len.id
                       ? "bg-violet-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
                   {len.label}
@@ -173,7 +173,7 @@ export function CaptionGeneratorPanel({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Plataforma
             </label>
             <div className="flex gap-2">
@@ -184,7 +184,7 @@ export function CaptionGeneratorPanel({
                   className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     options.platform === plat.id
                       ? "bg-violet-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
                   {plat.label}
@@ -201,9 +201,9 @@ export function CaptionGeneratorPanel({
               type="checkbox"
               checked={options.includeEmoji}
               onChange={(e) => updateOption("includeEmoji", e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-violet-500 focus:ring-violet-500"
+              className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-violet-500 focus:ring-violet-500"
             />
-            <span className="text-sm text-gray-700">Incluir emojis</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Incluir emojis</span>
           </label>
 
           <label className="flex cursor-pointer items-center gap-2">
@@ -213,16 +213,16 @@ export function CaptionGeneratorPanel({
               onChange={(e) =>
                 updateOption("includeCallToAction", e.target.checked)
               }
-              className="h-4 w-4 rounded border-gray-300 text-violet-500 focus:ring-violet-500"
+              className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-violet-500 focus:ring-violet-500"
             />
-            <span className="text-sm text-gray-700">Chamada para ação</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Chamada para ação</span>
           </label>
         </div>
 
         {/* Advanced Options Toggle */}
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="mb-4 flex items-center gap-1 text-sm text-violet-600 hover:text-violet-700"
+          className="mb-4 flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300"
         >
           <svg
             className={`h-4 w-4 transition-transform ${
@@ -243,10 +243,10 @@ export function CaptionGeneratorPanel({
         </button>
 
         {showAdvanced && (
-          <div className="mb-4 space-y-4 rounded-lg bg-gray-50 p-4">
+          <div className="mb-4 space-y-4 rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
             {/* Keywords */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Palavras-chave (separadas por vírgula)
               </label>
               <input
@@ -254,13 +254,13 @@ export function CaptionGeneratorPanel({
                 value={keywordsInput}
                 onChange={(e) => setKeywordsInput(e.target.value)}
                 placeholder="ex: loiro, balayage, verão"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
             </div>
 
             {/* Business Name */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Nome do negócio (opcional)
               </label>
               <input
@@ -268,7 +268,7 @@ export function CaptionGeneratorPanel({
                 value={options.businessName || ""}
                 onChange={(e) => updateOption("businessName", e.target.value)}
                 placeholder="ex: Studio Beleza"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
             </div>
           </div>

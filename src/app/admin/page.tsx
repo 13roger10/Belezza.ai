@@ -19,8 +19,8 @@ export default function AdminPage() {
   }, [user, isLoading, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-200 dark:border-violet-800 border-t-violet-600 dark:border-t-violet-400" />
     </div>
   );
 }
