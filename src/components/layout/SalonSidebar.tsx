@@ -19,6 +19,7 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Share2,
   type LucideIcon,
 } from "lucide-react";
 import { useSalonAuth } from "@/contexts/SalonAuthContext";
@@ -132,6 +133,12 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     title: "Marketing",
     items: [
+      {
+        label: "Gerenciar Rede Social",
+        href: "/admin/dashboard",
+        icon: Share2,
+        roles: ["ADMIN"],
+      },
       {
         label: "Promoções",
         href: "/salon/promotions",
