@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   X,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -40,6 +41,11 @@ const menuItems = [
     label: "Agendamentos",
     href: "/admin/schedule",
     icon: Calendar,
+  },
+  {
+    label: "Usuários",
+    href: "/admin/users",
+    icon: Users,
   },
   {
     label: "Configurações",

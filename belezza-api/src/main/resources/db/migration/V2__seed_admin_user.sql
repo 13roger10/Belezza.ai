@@ -2,7 +2,7 @@
 -- Seed admin user for testing
 -- Password: Admin@123 (BCrypt encoded with cost 12)
 
-INSERT INTO usuarios (
+MERGE INTO usuarios (
     email,
     password,
     nome,
@@ -13,7 +13,7 @@ INSERT INTO usuarios (
     email_verificado,
     criado_em,
     atualizado_em
-) VALUES (
+) KEY (email) VALUES (
     'admin@belezza.ai',
     '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtYWux/Rq0Kqi',
     'Administrador Belezza',
@@ -24,4 +24,4 @@ INSERT INTO usuarios (
     TRUE,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
-) ON CONFLICT (email) DO NOTHING;
+);

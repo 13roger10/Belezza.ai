@@ -373,3 +373,65 @@ export interface CaptionEditorState {
   wordCount: number;
   hashtagCount: number;
 }
+
+// ===== User Management Types (Sprint 2) =====
+
+export type UserRole = 'ADMIN' | 'PROFISSIONAL' | 'CLIENTE';
+export type UserPlano = 'FREE' | 'PRO' | 'PREMIUM';
+
+export interface UsuarioListItem {
+  id: number;
+  email: string;
+  nome: string;
+  telefone?: string;
+  avatarUrl?: string;
+  role: UserRole;
+  roleDescription: string;
+  plano: UserPlano;
+  ativo: boolean;
+  emailVerificado: boolean;
+  criadoEm: string;
+  ultimoLogin?: string;
+  salonId?: number;
+  salonNome?: string;
+}
+
+export interface UsuarioPageResponse {
+  content: UsuarioListItem[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface CreateUsuarioRequest {
+  nome: string;
+  email: string;
+  password: string;
+  telefone?: string;
+  avatarUrl?: string;
+  role: UserRole;
+  plano?: UserPlano;
+  salonId?: number;
+}
+
+export interface UpdateUsuarioRequest {
+  nome?: string;
+  email?: string;
+  password?: string;
+  telefone?: string;
+  avatarUrl?: string;
+  role?: UserRole;
+  plano?: UserPlano;
+  ativo?: boolean;
+  emailVerificado?: boolean;
+  salonId?: number;
+}
+
+export interface RoleOption {
+  value: string;
+  label: string;
+  authority: string;
+}

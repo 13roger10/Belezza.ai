@@ -85,7 +85,7 @@ export function Modal({
         <div
           className={`
             relative w-full ${sizeStyles[size]}
-            rounded-2xl bg-white shadow-xl
+            rounded-2xl bg-white dark:bg-gray-800 shadow-xl
             animate-in zoom-in-95 fade-in duration-200
           `}
           onClick={(e) => e.stopPropagation()}
@@ -96,12 +96,12 @@ export function Modal({
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-start justify-between border-b border-gray-100 p-4 pb-3">
+            <div className="flex items-start justify-between border-b border-gray-100 dark:border-gray-700 p-4 pb-3">
               <div>
                 {title && (
                   <h2
                     id="modal-title"
-                    className="text-lg font-semibold text-gray-900"
+                    className="text-lg font-semibold text-gray-900 dark:text-white"
                   >
                     {title}
                   </h2>
@@ -109,7 +109,7 @@ export function Modal({
                 {description && (
                   <p
                     id="modal-description"
-                    className="mt-1 text-sm text-gray-500"
+                    className="mt-1 text-sm text-gray-500 dark:text-gray-400"
                   >
                     {description}
                   </p>
@@ -118,7 +118,7 @@ export function Modal({
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Fechar modal"
                 >
                   <X className="h-5 w-5" />
@@ -132,7 +132,7 @@ export function Modal({
 
           {/* Footer */}
           {footer && (
-            <div className="flex items-center justify-end gap-2 border-t border-gray-100 p-4 pt-3">
+            <div className="flex items-center justify-end gap-2 border-t border-gray-100 dark:border-gray-700 p-4 pt-3">
               {footer}
             </div>
           )}
@@ -187,7 +187,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p className="text-gray-600">{message}</p>
+      <p className="text-gray-600 dark:text-gray-300">{message}</p>
     </Modal>
   );
 }
@@ -244,8 +244,8 @@ export function AlertModal({
             </svg>
           )}
         </div>
-        <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="mb-6 text-gray-600">{message}</p>
+        <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+        <p className="mb-6 text-gray-600 dark:text-gray-300">{message}</p>
         <Button onClick={onClose} fullWidth>
           {buttonText}
         </Button>
