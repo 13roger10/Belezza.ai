@@ -10,8 +10,8 @@ export { financeService } from './financeService';
 
 // Additional services
 export { commissionService } from './commissionService';
-// export { promotionService } from './promotionService';
-// export { stockService } from './stockService';
+export { promotionService } from './promotionService';
+export { stockService } from './stockService';
 // export { reviewService } from './reviewService';
 // export { loyaltyService } from './loyaltyService';
 // export { unitService } from './unitService';
