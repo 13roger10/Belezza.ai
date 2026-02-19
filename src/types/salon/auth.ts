@@ -68,6 +68,9 @@ export type AuthPermission =
   | 'stock.view'
   | 'stock.manage'
   | 'stock.register_movement'
+  // Fidelidade
+  | 'loyalty.view'
+  | 'loyalty.manage'
   // Dashboard
   | 'dashboard.view'
   | 'dashboard.view_full'
@@ -95,6 +98,7 @@ export const AUTH_ROLE_PERMISSIONS: Record<AuthUserRole, AuthPermission[]> = {
     'commissions.view', 'commissions.view_all', 'commissions.manage', 'commissions.pay',
     'promotions.view', 'promotions.create', 'promotions.edit', 'promotions.delete', 'promotions.manage_campaigns',
     'stock.view', 'stock.manage', 'stock.register_movement',
+    'loyalty.view', 'loyalty.manage',
     'dashboard.view', 'dashboard.view_full',
     'units.view_all', 'units.manage',
     'system.settings', 'system.backup', 'system.logs',

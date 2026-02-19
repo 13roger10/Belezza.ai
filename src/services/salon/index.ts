@@ -12,7 +12,7 @@ export { financeService } from './financeService';
 export { commissionService } from './commissionService';
 export { promotionService } from './promotionService';
 export { stockService } from './stockService';
+export { loyaltyService } from './loyaltyService';
 // export { reviewService } from './reviewService';
-// export { loyaltyService } from './loyaltyService';
 // export { unitService } from './unitService';
 // export { userService } from './userService';

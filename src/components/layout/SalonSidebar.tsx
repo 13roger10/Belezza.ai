@@ -146,6 +146,13 @@ const MENU_SECTIONS: MenuSection[] = [
         permission: "promotions.view",
         roles: ["ADMIN", "RECEPCIONIST"],
       },
+      {
+        label: "Fidelidade",
+        href: "/salon/loyalty",
+        icon: Star,
+        permission: "loyalty.view",
+        roles: ["ADMIN"],
+      },
     ],
   },
   {
