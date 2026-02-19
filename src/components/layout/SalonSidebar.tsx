@@ -174,7 +174,7 @@ const MENU_SECTIONS: MenuSection[] = [
         label: "Avaliações",
         href: "/salon/reviews",
         icon: Star,
-        permission: "dashboard.view",
+        permission: "reviews.view_all",
         roles: ["ADMIN"],
       },
       {
@@ -215,6 +215,11 @@ const CLIENT_MENU: MenuItem[] = [
   {
     label: "Meus Pontos",
     href: "/salon/client/loyalty",
+    icon: Star,
+  },
+  {
+    label: "Minhas Avaliações",
+    href: "/salon/client/reviews",
     icon: Star,
   },
   {

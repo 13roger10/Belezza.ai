@@ -13,6 +13,6 @@ export { commissionService } from './commissionService';
 export { promotionService } from './promotionService';
 export { stockService } from './stockService';
 export { loyaltyService } from './loyaltyService';
-// export { reviewService } from './reviewService';
+export { reviewService } from './reviewService';
 // export { unitService } from './unitService';
 // export { userService } from './userService';

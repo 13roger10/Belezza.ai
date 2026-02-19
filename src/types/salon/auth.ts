@@ -71,6 +71,11 @@ export type AuthPermission =
   // Fidelidade
   | 'loyalty.view'
   | 'loyalty.manage'
+  // Avaliações
+  | 'reviews.view'
+  | 'reviews.view_all'
+  | 'reviews.respond'
+  | 'reviews.moderate'
   // Dashboard
   | 'dashboard.view'
   | 'dashboard.view_full'
@@ -99,6 +104,7 @@ export const AUTH_ROLE_PERMISSIONS: Record<AuthUserRole, AuthPermission[]> = {
     'promotions.view', 'promotions.create', 'promotions.edit', 'promotions.delete', 'promotions.manage_campaigns',
     'stock.view', 'stock.manage', 'stock.register_movement',
     'loyalty.view', 'loyalty.manage',
+    'reviews.view', 'reviews.view_all', 'reviews.respond', 'reviews.moderate',
     'dashboard.view', 'dashboard.view_full',
     'units.view_all', 'units.manage',
     'system.settings', 'system.backup', 'system.logs',
@@ -117,6 +123,7 @@ export const AUTH_ROLE_PERMISSIONS: Record<AuthUserRole, AuthPermission[]> = {
     'services.view',
     'appointments.view', 'appointments.confirm', 'appointments.complete',
     'commissions.view',
+    'reviews.view',
     'dashboard.view',
   ],
   CLIENT: [
