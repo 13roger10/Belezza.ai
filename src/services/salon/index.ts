@@ -8,8 +8,8 @@ export { professionalService } from './professionalService';
 export { serviceService } from './serviceService';
 export { financeService } from './financeService';
 
-// Additional services will be added here:
-// export { commissionService } from './commissionService';
+// Additional services
+export { commissionService } from './commissionService';
 // export { promotionService } from './promotionService';
 // export { stockService } from './stockService';
 // export { reviewService } from './reviewService';

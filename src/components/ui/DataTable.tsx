@@ -6,7 +6,7 @@ import { Button } from "./Button";
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: string | ReactNode;
   sortable?: boolean;
   width?: string;
   align?: "left" | "center" | "right";

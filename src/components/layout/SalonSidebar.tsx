@@ -123,7 +123,7 @@ const MENU_SECTIONS: MenuSection[] = [
       },
       {
         label: "Comissões",
-        href: "/salon/commissions",
+        href: "/salon/commission",
         icon: Percent,
         permission: "commissions.view",
         roles: ["ADMIN", "PROFESSIONAL"],
@@ -220,7 +220,7 @@ const CLIENT_MENU: MenuItem[] = [
 export function SalonSidebar({ isOpen, onClose }: SalonSidebarProps) {
   const pathname = usePathname();
   const { logout, user, can, isRole } = useSalonAuth();
-  const [expandedSections, setExpandedSections] = useState<string[]>(["Principal", "Gestão", "Agendamento"]);
+  const [expandedSections, setExpandedSections] = useState<string[]>(["Principal", "Gestão", "Agendamento", "Financeiro"]);
 
   const handleLogout = () => {
     logout();
