@@ -1,7 +1,8 @@
 "use client";
 
-import { Menu, Bell, Sun, Moon, Search } from "lucide-react";
+import { Menu, Bell, Sun, Moon, Search, Building2, ChevronDown, Check } from "lucide-react";
 import { useSalonAuth } from "@/contexts/SalonAuthContext";
+import { useUnit } from "@/contexts/UnitContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AUTH_ROLE_LABELS, AUTH_ROLE_COLORS } from "@/types/salon/auth";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,9 @@ interface SalonHeaderProps {
 export function SalonHeader({ onMenuClick, pageTitle }: SalonHeaderProps) {
   const { user } = useSalonAuth();
   const { theme, setTheme } = useTheme();
+  const { selectedUnit, selectedUnitId, availableUnits, selectUnit, canChangeUnit, canViewAllUnits } = useUnit();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -55,6 +58,106 @@ export function SalonHeader({ onMenuClick, pageTitle }: SalonHeaderProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-2">
+        {/* Unit Selector - only show if user has multiple units or is admin */}
+        {canViewAllUnits && availableUnits.length > 0 && (
+          <div className="relative">
+            <button
+              onClick={() => setShowUnitSelector(!showUnitSelector)}
+              className={cn(
+                "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                selectedUnit
+                  ? "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-400"
+                  : "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              )}
+            >
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {selectedUnit ? selectedUnit.name : "Todas Unidades"}
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+
+            {showUnitSelector && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowUnitSelector(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-lg border bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                  <div className="border-b p-2 dark:border-gray-700">
+                    <p className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                      Selecionar Unidade
+                    </p>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto p-1">
+                    {/* All units option */}
+                    {canViewAllUnits && (
+                      <button
+                        onClick={() => {
+                          selectUnit(null);
+                          setShowUnitSelector(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          selectedUnitId === null
+                            ? "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                      >
+                        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-600">
+                          <Building2 className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="flex-1 text-left">Todas Unidades</span>
+                        {selectedUnitId === null && (
+                          <Check className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                        )}
+                      </button>
+                    )}
+                    {/* Individual units */}
+                    {availableUnits.map((unit) => (
+                      <button
+                        key={unit.id}
+                        onClick={() => {
+                          selectUnit(unit.id);
+                          setShowUnitSelector(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          selectedUnitId === unit.id
+                            ? "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                      >
+                        <div
+                          className="flex h-6 w-6 items-center justify-center rounded-lg text-white"
+                          style={{ backgroundColor: unit.color || "#8B5CF6" }}
+                        >
+                          <Building2 className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="flex-1 text-left">{unit.name}</span>
+                        {selectedUnitId === unit.id && (
+                          <Check className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Show current unit badge for non-admin users */}
+        {!canViewAllUnits && selectedUnit && (
+          <div
+            className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-white"
+            style={{ backgroundColor: selectedUnit.color || "#8B5CF6" }}
+          >
+            <Building2 className="h-4 w-4" />
+            <span className="hidden sm:inline">{selectedUnit.name}</span>
+          </div>
+        )}
+
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
