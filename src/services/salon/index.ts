@@ -16,3 +16,7 @@ export { loyaltyService } from './loyaltyService';
 export { reviewService } from './reviewService';
 export { unitService } from './unitService';
 // export { userService } from './userService';
+
+// PWA and notification services
+export { notificationService } from './notificationService';
+export { reminderService } from './reminderService';

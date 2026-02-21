@@ -9,18 +9,28 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  description: "Crie e publique posts incríveis para suas redes sociais com ajuda da IA",
+  title: "Belezza.ai - Gestao de Salao",
+  description: "Sistema completo de gestao para saloes de beleza e barbearias. Agendamento online, notificacoes push e muito mais.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
+    title: "Belezza.ai",
   },
   formatDetection: {
     telephone: false,
   },
   icons: {
-    icon: "/icons/icon-192x192.png",
-    apple: "/icons/icon-192x192.png",
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 

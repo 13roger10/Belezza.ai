@@ -15,3 +15,4 @@ export * from './review';
 export * from './loyalty';
 export * from './unit';
 export * from './common';
+export * from './notification';

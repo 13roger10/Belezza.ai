@@ -110,6 +110,14 @@ export const appointmentService = {
     });
   },
 
+  // Get availability (alias for MobileBooking compatibility)
+  getAvailability: (data: AvailabilityRequest): Promise<AvailabilityResponse> => {
+    return api.post<AvailabilityResponse>(`${BASE_PATH}/availability`, {
+      ...data,
+      date: data.date.toISOString(),
+    });
+  },
+
   // Apply coupon to appointment
   applyCoupon: (
     id: string,

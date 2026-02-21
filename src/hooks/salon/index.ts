@@ -48,4 +48,10 @@ export {
 // Finance hooks (to be implemented)
 // export * from './useFinance';
 
+// PWA hooks
+export { usePWA } from './usePWA';
+
+// Notification hooks
+export { useNotifications } from './useNotifications';
+
 // More hooks will be added here...

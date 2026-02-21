@@ -1,12 +1,14 @@
 {
-  "name": "Social Studio IA",
-  "short_name": "Social Studio",
-  "description": "Crie e publique posts incríveis para suas redes sociais com ajuda da IA",
-  "start_url": "/",
+  "name": "Belezza.ai - Gestão de Salão",
+  "short_name": "Belezza.ai",
+  "description": "Sistema completo de gestão para salões de beleza e barbearias",
+  "start_url": "/salon/dashboard",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
+  "lang": "pt-BR",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -57,15 +59,57 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["social", "productivity", "business"],
-  "screenshots": [],
+  "categories": ["business", "productivity", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard do Salão"
+    },
+    {
+      "src": "/screenshots/mobile-booking.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Agendamento Mobile"
+    }
+  ],
   "shortcuts": [
     {
-      "name": "Novo Post",
-      "short_name": "Novo Post",
-      "description": "Criar um novo post",
-      "url": "/admin/social-studio",
+      "name": "Novo Agendamento",
+      "short_name": "Agendar",
+      "description": "Criar um novo agendamento",
+      "url": "/salon/book",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Agenda de Hoje",
+      "short_name": "Hoje",
+      "description": "Ver agendamentos de hoje",
+      "url": "/salon/appointments?view=today",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Clientes",
+      "short_name": "Clientes",
+      "description": "Gerenciar clientes",
+      "url": "/salon/clients",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Painel principal",
+      "url": "/salon/dashboard",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }

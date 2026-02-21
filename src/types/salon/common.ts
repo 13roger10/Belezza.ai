@@ -13,14 +13,15 @@ export interface SoftDelete {
 }
 
 export interface PaginationParams {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
 
 export interface PaginatedResponse<T> {
   data: T[];
+  items: T[]; // alias for data
   meta: {
     total: number;
     page: number;

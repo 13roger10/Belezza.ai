@@ -27,6 +27,14 @@ export const professionalService = {
     return api.get<Professional[]>(`${BASE_PATH}/all`, params);
   },
 
+  // List professionals by services (for booking flow)
+  listByServices: (serviceIds: string[], unitId?: string): Promise<Professional[]> => {
+    return api.get<Professional[]>(`${BASE_PATH}/by-services`, {
+      serviceIds: serviceIds.join(','),
+      unitId,
+    });
+  },
+
   // Get single professional by ID
   getById: (id: string): Promise<Professional> => {
     return api.get<Professional>(`${BASE_PATH}/${id}`);

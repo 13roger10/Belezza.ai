@@ -12,6 +12,7 @@ export interface Professional extends Timestamps, SoftDelete {
   phone: string;
   avatar?: string;
   bio?: string;
+  role?: string; // e.g., "Cabeleireiro", "Manicure"
   status: Status;
 
   // Services
