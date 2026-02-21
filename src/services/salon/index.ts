@@ -20,3 +20,6 @@ export { unitService } from './unitService';
 // PWA and notification services
 export { notificationService } from './notificationService';
 export { reminderService } from './reminderService';
+
+// Audit and backup services
+export { auditService, setAuditContext, clearAuditContext, withAuditLog } from './auditService';
