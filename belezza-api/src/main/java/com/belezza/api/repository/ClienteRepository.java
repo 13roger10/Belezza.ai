@@ -37,4 +37,13 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     @Query("SELECT COUNT(c) FROM Cliente c WHERE c.salon.id = :salonId AND c.ativo = true")
     long countActiveBySalonId(@Param("salonId") Long salonId);
+
+    // Dashboard: Novos clientes no período
+    @Query("SELECT COUNT(c) FROM Cliente c WHERE c.salon.id = :salonId " +
+           "AND c.criadoEm BETWEEN :inicio AND :fim")
+    long countNovosBySalonIdAndPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
 }

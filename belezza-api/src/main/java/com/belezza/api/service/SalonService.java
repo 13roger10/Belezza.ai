@@ -5,13 +5,17 @@ import com.belezza.api.dto.salon.SalonResponse;
 import com.belezza.api.entity.Role;
 import com.belezza.api.entity.Salon;
 import com.belezza.api.entity.Usuario;
+import com.belezza.api.entity.Profissional;
 import com.belezza.api.exception.BusinessException;
 import com.belezza.api.exception.DuplicateResourceException;
 import com.belezza.api.exception.ResourceNotFoundException;
 import com.belezza.api.repository.SalonRepository;
 import com.belezza.api.repository.UsuarioRepository;
+import com.belezza.api.repository.ProfissionalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ public class SalonService {
 
     private final SalonRepository salonRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ProfissionalRepository profissionalRepository;
 
     @Transactional
     public SalonResponse criar(SalonRequest request, String emailAdmin) {
@@ -163,5 +168,48 @@ public class SalonService {
             return LocalTime.parse(defaultTime);
         }
         return LocalTime.parse(time);
+    }
+
+    /**
+     * Get salon ID for the currently logged-in user.
+     * Works for both ADMIN (salon owner) and PROFISSIONAL users.
+     */
+    @Transactional(readOnly = true)
+    public Long getSalonIdDoUsuarioLogado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new BusinessException("Usuário não autenticado");
+        }
+
+        String email = auth.getName();
+        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "email", email));
+
+        // If user is ADMIN, get their salon
+        if (usuario.getRole() == Role.ADMIN) {
+            Salon salon = salonRepository.findByAdminIdAndAtivoTrue(usuario.getId())
+                    .orElseThrow(() -> new BusinessException("Salão não encontrado para o administrador"));
+            return salon.getId();
+        }
+
+        // If user is PROFISSIONAL, get salon from their profile
+        if (usuario.getRole() == Role.PROFISSIONAL) {
+            Profissional profissional = profissionalRepository.findByUsuarioIdAndAtivoTrue(usuario.getId())
+                    .orElseThrow(() -> new BusinessException("Perfil de profissional não encontrado"));
+            return profissional.getSalon().getId();
+        }
+
+        throw new BusinessException("Usuário não possui acesso ao dashboard");
+    }
+
+    /**
+     * Get the currently logged-in user's email.
+     */
+    public String getEmailUsuarioLogado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new BusinessException("Usuário não autenticado");
+        }
+        return auth.getName();
     }
 }

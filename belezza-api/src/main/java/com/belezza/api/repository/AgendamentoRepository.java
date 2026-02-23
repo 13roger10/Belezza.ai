@@ -98,4 +98,79 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         @Param("inicio") LocalDateTime inicio,
         @Param("fim") LocalDateTime fim
     );
+
+    // Dashboard: Agendamentos por hora
+    @Query("SELECT EXTRACT(HOUR FROM a.dataHora) as hora, COUNT(a) " +
+           "FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status NOT IN ('CANCELADO', 'NO_SHOW') " +
+           "GROUP BY EXTRACT(HOUR FROM a.dataHora) " +
+           "ORDER BY hora")
+    List<Object[]> countByHourAndPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
+
+    // Dashboard: Serviços mais populares
+    @Query("SELECT a.servico.id, a.servico.nome, a.servico.tipo, a.servico.preco, COUNT(a), SUM(a.valorCobrado) " +
+           "FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status = 'CONCLUIDO' " +
+           "AND a.servico IS NOT NULL " +
+           "GROUP BY a.servico.id, a.servico.nome, a.servico.tipo, a.servico.preco " +
+           "ORDER BY COUNT(a) DESC")
+    List<Object[]> findTopServicosByPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim,
+        Pageable pageable
+    );
+
+    // Dashboard: Ranking de profissionais
+    @Query("SELECT a.profissional.id, a.profissional.usuario.nome, a.profissional.fotoUrl, " +
+           "COUNT(a), SUM(a.valorCobrado) " +
+           "FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status = 'CONCLUIDO' " +
+           "GROUP BY a.profissional.id, a.profissional.usuario.nome, a.profissional.fotoUrl " +
+           "ORDER BY SUM(a.valorCobrado) DESC")
+    List<Object[]> findRankingProfissionaisByPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
+
+    // Dashboard: Total concluídos
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status = :status")
+    long countBySalonIdAndPeriodAndStatus(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim,
+        @Param("status") StatusAgendamento status
+    );
+
+    // Dashboard: Clientes únicos atendidos no período
+    @Query("SELECT COUNT(DISTINCT a.cliente.id) FROM Agendamento a WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status = 'CONCLUIDO'")
+    long countDistinctClientesAtendidosByPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
+
+    // Dashboard: Clientes recorrentes (mais de um agendamento no período)
+    @Query("SELECT COUNT(DISTINCT c.id) FROM Agendamento a JOIN a.cliente c " +
+           "WHERE a.salon.id = :salonId " +
+           "AND a.dataHora BETWEEN :inicio AND :fim " +
+           "AND a.status = 'CONCLUIDO' " +
+           "GROUP BY c.id HAVING COUNT(a) > 1")
+    Long countClientesRecorrentesByPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }

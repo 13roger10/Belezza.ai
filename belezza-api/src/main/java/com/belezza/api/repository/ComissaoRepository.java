@@ -99,4 +99,25 @@ public interface ComissaoRepository extends JpaRepository<Comissao, Long> {
         @Param("inicio") LocalDateTime inicio,
         @Param("fim") LocalDateTime fim
     );
+
+    // Dashboard: Total de comissões por status no período
+    @Query("SELECT c.status, COUNT(c), SUM(c.valorComissao) " +
+           "FROM Comissao c WHERE c.salon.id = :salonId " +
+           "AND c.criadoEm BETWEEN :inicio AND :fim " +
+           "GROUP BY c.status")
+    List<Object[]> sumByStatusAndPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
+
+    // Dashboard: Total geral de comissões no período
+    @Query("SELECT SUM(c.valorComissao) FROM Comissao c " +
+           "WHERE c.salon.id = :salonId " +
+           "AND c.criadoEm BETWEEN :inicio AND :fim")
+    BigDecimal sumTotalBySalonIdAndPeriod(
+        @Param("salonId") Long salonId,
+        @Param("inicio") LocalDateTime inicio,
+        @Param("fim") LocalDateTime fim
+    );
 }

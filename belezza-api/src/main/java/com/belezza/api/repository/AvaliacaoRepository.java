@@ -32,4 +32,8 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
     @Query("SELECT COUNT(a) FROM Avaliacao a WHERE a.profissional.id = :profissionalId")
     long countByProfissionalId(@Param("profissionalId") Long profissionalId);
+
+    // Dashboard: Média de avaliação como BigDecimal
+    @Query("SELECT COALESCE(AVG(a.nota), 0) FROM Avaliacao a WHERE a.profissional.id = :profissionalId")
+    java.math.BigDecimal avgNotaByProfissionalId(@Param("profissionalId") Long profissionalId);
 }
