@@ -5,6 +5,7 @@ import com.belezza.api.entity.Cliente;
 import com.belezza.api.entity.StatusAgendamento;
 import com.belezza.api.integration.WhatsAppService;
 import com.belezza.api.repository.AgendamentoRepository;
+import com.belezza.api.service.NotificacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class LembreteAgendamentoJob {
 
     private final AgendamentoRepository agendamentoRepository;
     private final WhatsAppService whatsAppService;
+    private final NotificacaoService notificacaoService;
 
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
@@ -67,6 +69,14 @@ public class LembreteAgendamentoJob {
                 enviarLembrete24h(agendamento);
                 agendamento.setLembreteEnviado24h(true);
                 agendamentoRepository.save(agendamento);
+
+                // Criar notificação no sistema
+                try {
+                    notificacaoService.notificarLembrete24h(agendamento);
+                } catch (Exception ne) {
+                    log.error("Erro ao criar notificação 24h: {}", ne.getMessage());
+                }
+
                 log.info("Lembrete 24h enviado para agendamento {}", agendamento.getId());
             } catch (Exception e) {
                 log.error("Erro ao enviar lembrete 24h para agendamento {}: {}",
@@ -105,6 +115,14 @@ public class LembreteAgendamentoJob {
                 enviarLembrete2h(agendamento);
                 agendamento.setLembreteEnviado2h(true);
                 agendamentoRepository.save(agendamento);
+
+                // Criar notificação no sistema
+                try {
+                    notificacaoService.notificarLembrete2h(agendamento);
+                } catch (Exception ne) {
+                    log.error("Erro ao criar notificação 2h: {}", ne.getMessage());
+                }
+
                 log.info("Lembrete 2h enviado para agendamento {}", agendamento.getId());
             } catch (Exception e) {
                 log.error("Erro ao enviar lembrete 2h para agendamento {}: {}",

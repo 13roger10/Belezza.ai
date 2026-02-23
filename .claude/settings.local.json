@@ -106,7 +106,8 @@
       "Bash(start \"\" \"C:\\\\Users\\\\Rogerio Martins\\\\Nova pasta\\\\Belezza.ai\\\\relatorio-sistema-belezza.html\")",
       "Bash(npx next lint:*)",
       "Bash(npx eslint:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

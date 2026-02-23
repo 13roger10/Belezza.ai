@@ -192,6 +192,14 @@ belezza:
     api-url: https://graph.facebook.com
     retry:
       enabled: ${WHATSAPP_RETRY_ENABLED:true}
+    lembretes:
+      enabled: ${WHATSAPP_LEMBRETES_ENABLED:true}
+
+  # Web Push Notification (VAPID)
+  push:
+    vapid-public-key: ${VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${VAPID_PRIVATE_KEY:}
+    vapid-subject: ${VAPID_SUBJECT:mailto:contato@belezza.ai}
 
   # Meta Graph API Configuration (Instagram/Facebook)
   meta:

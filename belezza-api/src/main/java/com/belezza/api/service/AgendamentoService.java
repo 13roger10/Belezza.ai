@@ -14,6 +14,7 @@ import com.belezza.api.repository.HorarioTrabalhoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,8 @@ public class AgendamentoService {
     private final BloqueioHorarioService bloqueioHorarioService;
     private final WhatsAppService whatsAppService;
     private final ComissaoService comissaoService;
+    @Lazy
+    private final FidelidadeService fidelidadeService;
 
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
@@ -318,6 +321,14 @@ public class AgendamentoService {
             comissaoService.calcularComissao(agendamento);
         } catch (Exception e) {
             log.error("Erro ao calcular comissao para agendamento {}: {}", id, e.getMessage());
+            // Nao propagar erro - conclusao ja foi realizada
+        }
+
+        // Registrar visita no programa de fidelidade
+        try {
+            fidelidadeService.registrarVisita(id, agendamento);
+        } catch (Exception e) {
+            log.error("Erro ao registrar visita de fidelidade para agendamento {}: {}", id, e.getMessage());
             // Nao propagar erro - conclusao ja foi realizada
         }
 

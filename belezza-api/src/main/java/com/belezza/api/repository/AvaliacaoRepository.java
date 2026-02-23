@@ -36,4 +36,33 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
     // Dashboard: Média de avaliação como BigDecimal
     @Query("SELECT COALESCE(AVG(a.nota), 0) FROM Avaliacao a WHERE a.profissional.id = :profissionalId")
     java.math.BigDecimal avgNotaByProfissionalId(@Param("profissionalId") Long profissionalId);
+
+    // Ranking: Profissionais por média de nota
+    @Query("SELECT a.profissional.id, a.profissional.usuario.nome, a.profissional.fotoUrl, " +
+           "AVG(a.nota), COUNT(a), " +
+           "SUM(CASE WHEN a.nota = 5 THEN 1 ELSE 0 END), " +
+           "SUM(CASE WHEN a.nota = 4 THEN 1 ELSE 0 END), " +
+           "SUM(CASE WHEN a.nota = 3 THEN 1 ELSE 0 END), " +
+           "SUM(CASE WHEN a.nota = 2 THEN 1 ELSE 0 END), " +
+           "SUM(CASE WHEN a.nota = 1 THEN 1 ELSE 0 END) " +
+           "FROM Avaliacao a WHERE a.salon.id = :salonId " +
+           "GROUP BY a.profissional.id, a.profissional.usuario.nome, a.profissional.fotoUrl " +
+           "ORDER BY AVG(a.nota) DESC, COUNT(a) DESC")
+    java.util.List<Object[]> findRankingPorNotaBySalonId(@Param("salonId") Long salonId);
+
+    // Distribuição de notas por salão
+    @Query("SELECT a.nota, COUNT(a) FROM Avaliacao a WHERE a.salon.id = :salonId GROUP BY a.nota ORDER BY a.nota DESC")
+    java.util.List<Object[]> countByNotaBySalonId(@Param("salonId") Long salonId);
+
+    // Avaliações com comentário
+    @Query("SELECT COUNT(a) FROM Avaliacao a WHERE a.salon.id = :salonId AND a.comentario IS NOT NULL AND LENGTH(a.comentario) > 0")
+    long countComComentarioBySalonId(@Param("salonId") Long salonId);
+
+    // Últimas avaliações
+    @Query("SELECT a FROM Avaliacao a WHERE a.salon.id = :salonId ORDER BY a.criadoEm DESC")
+    java.util.List<Avaliacao> findUltimasBySalonId(@Param("salonId") Long salonId, org.springframework.data.domain.Pageable pageable);
+
+    // Média geral do salão como BigDecimal
+    @Query("SELECT COALESCE(AVG(a.nota), 0) FROM Avaliacao a WHERE a.salon.id = :salonId")
+    java.math.BigDecimal avgNotaBySalonId(@Param("salonId") Long salonId);
 }
