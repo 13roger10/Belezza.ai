@@ -41,6 +41,7 @@ public class AgendamentoService {
     private final ClienteService clienteService;
     private final BloqueioHorarioService bloqueioHorarioService;
     private final WhatsAppService whatsAppService;
+    private final ComissaoService comissaoService;
 
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
@@ -311,6 +312,14 @@ public class AgendamentoService {
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
         agendamento = agendamentoRepository.save(agendamento);
         log.info("Agendamento concluído: {}", id);
+
+        // Calcular comissao automaticamente
+        try {
+            comissaoService.calcularComissao(agendamento);
+        } catch (Exception e) {
+            log.error("Erro ao calcular comissao para agendamento {}: {}", id, e.getMessage());
+            // Nao propagar erro - conclusao ja foi realizada
+        }
 
         // Enviar mensagem de pós-atendimento via WhatsApp
         enviarNotificacaoPosAtendimento(agendamento);

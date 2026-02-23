@@ -1,11 +1,13 @@
 package com.belezza.api.dto.profissional;
 
 import com.belezza.api.entity.Profissional;
+import com.belezza.api.entity.TipoComissao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +28,9 @@ public class ProfissionalResponse {
     private boolean aceitaAgendamentoOnline;
     private boolean ativo;
     private Long salonId;
+    private TipoComissao tipoComissao;
+    private String tipoComissaoDescricao;
+    private BigDecimal valorComissao;
     private List<ServicoResumo> servicos;
     private LocalDateTime criadoEm;
 
@@ -52,6 +57,9 @@ public class ProfissionalResponse {
                 .aceitaAgendamentoOnline(prof.isAceitaAgendamentoOnline())
                 .ativo(prof.isAtivo())
                 .salonId(prof.getSalon().getId())
+                .tipoComissao(prof.getTipoComissao())
+                .tipoComissaoDescricao(prof.getTipoComissao() != null ? prof.getTipoComissao().getDescription() : null)
+                .valorComissao(prof.getValorComissao())
                 .criadoEm(prof.getCriadoEm());
 
         if (prof.getServicos() != null) {

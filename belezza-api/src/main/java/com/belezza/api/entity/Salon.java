@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -90,6 +91,15 @@ public class Salon {
     @Column(nullable = false)
     @Builder.Default
     private boolean ativo = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private TipoComissao tipoComissaoPadrao = TipoComissao.PORCENTAGEM;
+
+    @Column(precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal valorComissaoPadrao = BigDecimal.valueOf(10.00);
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", nullable = false, unique = true)

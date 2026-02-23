@@ -1,11 +1,13 @@
 package com.belezza.api.dto.salon;
 
 import com.belezza.api.entity.Salon;
+import com.belezza.api.entity.TipoComissao;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -34,6 +36,9 @@ public class SalonResponse {
     private int maxNoShowsPermitidos;
     private boolean aceitaAgendamentoOnline;
     private boolean ativo;
+    private TipoComissao tipoComissaoPadrao;
+    private String tipoComissaoPadraoDescricao;
+    private BigDecimal valorComissaoPadrao;
     private Long adminId;
     private String adminNome;
     private LocalDateTime criadoEm;
@@ -60,6 +65,9 @@ public class SalonResponse {
                 .maxNoShowsPermitidos(salon.getMaxNoShowsPermitidos())
                 .aceitaAgendamentoOnline(salon.isAceitaAgendamentoOnline())
                 .ativo(salon.isAtivo())
+                .tipoComissaoPadrao(salon.getTipoComissaoPadrao())
+                .tipoComissaoPadraoDescricao(salon.getTipoComissaoPadrao() != null ? salon.getTipoComissaoPadrao().getDescription() : null)
+                .valorComissaoPadrao(salon.getValorComissaoPadrao())
                 .adminId(salon.getAdmin().getId())
                 .adminNome(salon.getAdmin().getNome())
                 .criadoEm(salon.getCriadoEm())

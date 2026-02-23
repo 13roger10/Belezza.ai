@@ -218,6 +218,16 @@ belezza:
         remove-bg: cjwbw/rembg
         upscale: nightmareai/real-esrgan
 
+  # Backup Configuration
+  backup:
+    enabled: ${BACKUP_ENABLED:true}
+    directory: ${BACKUP_DIRECTORY:./backups}
+    retention-days: ${BACKUP_RETENTION_DAYS:30}
+    compress: ${BACKUP_COMPRESS:true}
+    pg-dump-path: ${PG_DUMP_PATH:pg_dump}
+    schedule: ${BACKUP_SCHEDULE:0 0 3 * * ?}  # Every day at 3:00 AM
+    cleanup-schedule: ${BACKUP_CLEANUP_SCHEDULE:0 0 4 ? * SUN}  # Every Sunday at 4:00 AM
+
   # Plan Limits Configuration
   plans:
     free:
