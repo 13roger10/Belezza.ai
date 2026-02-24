@@ -1,85 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SalonAuthUser, AuthUserRole, AUTH_ROLE_PERMISSIONS, AuthLoginResponse } from "@/types/salon/auth";
 
-// ===== Mock de usuários para desenvolvimento =====
-// Em produção, isso viria do backend Java Spring Boot
-const MOCK_USERS: Record<string, { password: string; user: Omit<SalonAuthUser, 'permissions'> }> = {
-  "admin@belezza.com": {
-    password: "admin123",
-    user: {
-      id: "1",
-      email: "admin@belezza.com",
-      name: "Administrador",
-      role: "ADMIN" as AuthUserRole,
-      phone: "(11) 99999-9999",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-  "recepcionista@belezza.com": {
-    password: "recep123",
-    user: {
-      id: "2",
-      email: "recepcionista@belezza.com",
-      name: "Maria Recepcionista",
-      role: "RECEPCIONIST" as AuthUserRole,
-      phone: "(11) 98888-8888",
-      unitId: "unit-1",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-  "profissional@belezza.com": {
-    password: "prof123",
-    user: {
-      id: "3",
-      email: "profissional@belezza.com",
-      name: "João Barbeiro",
-      role: "PROFESSIONAL" as AuthUserRole,
-      phone: "(11) 97777-7777",
-      unitId: "unit-1",
-      professionalId: "prof-1",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-  "cliente@belezza.com": {
-    password: "cliente123",
-    user: {
-      id: "4",
-      email: "cliente@belezza.com",
-      name: "Carlos Cliente",
-      role: "CLIENT" as AuthUserRole,
-      phone: "(11) 96666-6666",
-      clientId: "client-1",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  },
-};
+// Backend API URL
+const BACKEND_URL = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
-// Função para gerar token JWT mock (em produção, usar jose ou jsonwebtoken)
-function generateMockToken(user: SalonAuthUser): string {
-  const payload = {
-    sub: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 86400, // 24 horas
+// Interface para resposta do backend
+interface BackendAuthResponse {
+  user: {
+    id: number;
+    email: string;
+    nome: string;
+    telefone?: string;
+    avatarUrl?: string;
+    role: "ADMIN" | "PROFISSIONAL" | "CLIENTE";
+    plano: string;
+    emailVerificado: boolean;
+    criadoEm: string;
+    ultimoLogin?: string;
   };
-  // Mock: em produção usar JWT real
-  return Buffer.from(JSON.stringify(payload)).toString('base64');
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
-function generateRefreshToken(): string {
-  return Buffer.from(
-    JSON.stringify({ random: Math.random().toString(36), timestamp: Date.now() })
-  ).toString('base64');
+// Mapeia role do backend para role do frontend
+function mapBackendRole(backendRole: string): AuthUserRole {
+  const roleMap: Record<string, AuthUserRole> = {
+    "ADMIN": "ADMIN",
+    "PROFISSIONAL": "PROFESSIONAL",
+    "CLIENTE": "CLIENT",
+  };
+  return roleMap[backendRole] || "CLIENT";
+}
+
+// Mapeia usuário do backend para formato do frontend
+function mapBackendUser(backendUser: BackendAuthResponse["user"]): SalonAuthUser {
+  const role = mapBackendRole(backendUser.role);
+  return {
+    id: backendUser.id.toString(),
+    email: backendUser.email,
+    name: backendUser.nome,
+    role,
+    phone: backendUser.telefone,
+    avatar: backendUser.avatarUrl,
+    isActive: true,
+    createdAt: new Date(backendUser.criadoEm),
+    updatedAt: backendUser.ultimoLogin ? new Date(backendUser.ultimoLogin) : new Date(backendUser.criadoEm),
+    lastLogin: backendUser.ultimoLogin ? new Date(backendUser.ultimoLogin) : undefined,
+    permissions: AUTH_ROLE_PERMISSIONS[role] || [],
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -94,62 +64,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Busca usuário mock
-    const mockUser = MOCK_USERS[email.toLowerCase()];
+    // Chama o backend Java
+    const backendResponse = await fetch(`${BACKEND_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    if (!mockUser) {
+    // Se falhar, retorna o erro do backend
+    if (!backendResponse.ok) {
+      const errorData = await backendResponse.json().catch(() => ({}));
+      const errorMessage = errorData.message || "Credenciais inválidas";
       return NextResponse.json(
-        { message: "Usuário não encontrado" },
-        { status: 401 }
+        { message: errorMessage },
+        { status: backendResponse.status }
       );
     }
 
-    if (mockUser.password !== password) {
-      return NextResponse.json(
-        { message: "Senha incorreta" },
-        { status: 401 }
-      );
-    }
+    // Processa resposta do backend
+    const backendData: BackendAuthResponse = await backendResponse.json();
 
-    if (!mockUser.user.isActive) {
-      return NextResponse.json(
-        { message: "Usuário inativo. Entre em contato com o administrador." },
-        { status: 403 }
-      );
-    }
-
-    // Adiciona permissões baseadas na role
-    const userWithPermissions: SalonAuthUser = {
-      ...mockUser.user,
-      permissions: AUTH_ROLE_PERMISSIONS[mockUser.user.role],
-      lastLogin: new Date(),
-    };
-
-    const token = generateMockToken(userWithPermissions);
-    const refreshToken = generateRefreshToken();
+    // Mapeia para formato do frontend
+    const user = mapBackendUser(backendData.user);
 
     const response: AuthLoginResponse = {
-      user: userWithPermissions,
-      token,
-      refreshToken,
-      expiresIn: 86400, // 24 horas em segundos
+      user,
+      token: backendData.accessToken,
+      refreshToken: backendData.refreshToken,
+      expiresIn: backendData.expiresIn,
     };
 
     // Cria response com cookie
     const nextResponse = NextResponse.json(response);
 
     // Define cookie HttpOnly para segurança
-    nextResponse.cookies.set("salon_auth_token", token, {
+    nextResponse.cookies.set("salon_auth_token", backendData.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 86400, // 24 horas
+      maxAge: backendData.expiresIn,
       path: "/",
     });
 
     return nextResponse;
   } catch (error) {
     console.error("Login error:", error);
+
+    // Se for erro de conexão com o backend
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      return NextResponse.json(
+        { message: "Não foi possível conectar ao servidor. Verifique se o backend está rodando." },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { message: "Erro interno do servidor" },
       { status: 500 }

@@ -29,7 +29,7 @@ export const userService = {
     queryParams.append("size", size.toString());
 
     const response = await api.get<UsuarioPageResponse>(
-      `/api/usuarios?${queryParams.toString()}`
+      `/usuarios?${queryParams.toString()}`
     );
     return response.data;
   },
@@ -38,7 +38,7 @@ export const userService = {
    * Busca um usuário por ID
    */
   async getById(id: number): Promise<UsuarioListItem> {
-    const response = await api.get<UsuarioListItem>(`/api/usuarios/${id}`);
+    const response = await api.get<UsuarioListItem>(`/usuarios/${id}`);
     return response.data;
   },
 
@@ -46,7 +46,7 @@ export const userService = {
    * Cria um novo usuário
    */
   async create(data: CreateUsuarioRequest): Promise<UsuarioListItem> {
-    const response = await api.post<UsuarioListItem>("/api/usuarios", data);
+    const response = await api.post<UsuarioListItem>("/usuarios", data);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const userService = {
    * Atualiza um usuário existente
    */
   async update(id: number, data: UpdateUsuarioRequest): Promise<UsuarioListItem> {
-    const response = await api.put<UsuarioListItem>(`/api/usuarios/${id}`, data);
+    const response = await api.put<UsuarioListItem>(`/usuarios/${id}`, data);
     return response.data;
   },
 
@@ -62,14 +62,14 @@ export const userService = {
    * Desativa um usuário (soft delete)
    */
   async deactivate(id: number): Promise<void> {
-    await api.delete(`/api/usuarios/${id}`);
+    await api.delete(`/usuarios/${id}`);
   },
 
   /**
    * Reativa um usuário
    */
   async reactivate(id: number): Promise<UsuarioListItem> {
-    const response = await api.post<UsuarioListItem>(`/api/usuarios/${id}/reativar`);
+    const response = await api.post<UsuarioListItem>(`/usuarios/${id}/reativar`);
     return response.data;
   },
 
@@ -77,7 +77,7 @@ export const userService = {
    * Busca todas as roles disponíveis
    */
   async getRoles(): Promise<RoleOption[]> {
-    const response = await api.get<RoleOption[]>("/api/usuarios/roles");
+    const response = await api.get<RoleOption[]>("/usuarios/roles");
     return response.data;
   },
 };
