@@ -92,7 +92,7 @@ class PostServiceTest {
                 .plataforma(PlataformaSocial.INSTAGRAM)
                 .accountId("123456789")
                 .accessToken("token-123")
-                .ativo(true)
+                .ativa(true)
                 .build();
     }
 

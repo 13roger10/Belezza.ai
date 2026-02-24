@@ -181,7 +181,7 @@ class JwtSecurityTest {
                 .build();
 
         // When
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateAccessToken(userDetails);
 
         // Then
         // JWT should have 3 parts separated by dots
@@ -193,7 +193,7 @@ class JwtSecurityTest {
         org.assertj.core.api.Assertions.assertThat(username).isEqualTo("test@example.com");
 
         // Token should be valid
-        boolean isValid = jwtService.validateToken(token, userDetails);
+        boolean isValid = jwtService.isTokenValid(token, userDetails);
         org.assertj.core.api.Assertions.assertThat(isValid).isTrue();
     }
 
@@ -213,10 +213,10 @@ class JwtSecurityTest {
                 .roles("ADMIN")
                 .build();
 
-        String token = jwtService.generateToken(originalUser);
+        String token = jwtService.generateAccessToken(originalUser);
 
         // When
-        boolean isValid = jwtService.validateToken(token, differentUser);
+        boolean isValid = jwtService.isTokenValid(token, differentUser);
 
         // Then
         org.assertj.core.api.Assertions.assertThat(isValid).isFalse();
@@ -234,7 +234,7 @@ class JwtSecurityTest {
                 .build();
 
         // When
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateAccessToken(userDetails);
         String extractedUsername = jwtService.extractUsername(token);
 
         // Then
@@ -258,7 +258,7 @@ class JwtSecurityTest {
         for (int i = 0; i < 10; i++) {
             final int index = i;
             threads[i] = new Thread(() -> {
-                tokens[index] = jwtService.generateToken(userDetails);
+                tokens[index] = jwtService.generateAccessToken(userDetails);
             });
             threads[i].start();
         }
@@ -270,7 +270,7 @@ class JwtSecurityTest {
         // Then - All tokens should be valid and non-null
         for (String token : tokens) {
             org.assertj.core.api.Assertions.assertThat(token).isNotNull();
-            org.assertj.core.api.Assertions.assertThat(jwtService.validateToken(token, userDetails)).isTrue();
+            org.assertj.core.api.Assertions.assertThat(jwtService.isTokenValid(token, userDetails)).isTrue();
         }
     }
 
@@ -283,6 +283,6 @@ class JwtSecurityTest {
                 .roles(usuario.getRole().name())
                 .build();
 
-        return jwtService.generateToken(userDetails);
+        return jwtService.generateAccessToken(userDetails);
     }
 }

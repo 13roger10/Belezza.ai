@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.belezza.api.security.annotation.Auditable;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -50,6 +51,7 @@ public class AgendamentoService {
     private String frontendUrl;
 
     @Transactional
+    @Auditable(action = "CREATE", entityType = "Agendamento", captureNewState = true)
     public AgendamentoResponse criar(AgendamentoRequest request, String emailCliente) {
         log.info("Criando agendamento para cliente: {}", emailCliente);
 
@@ -305,6 +307,7 @@ public class AgendamentoService {
     }
 
     @Transactional
+    @Auditable(action = "COMPLETE", entityType = "Agendamento", captureOldState = true, captureNewState = true)
     public AgendamentoResponse concluir(Long id) {
         Agendamento agendamento = getAgendamento(id);
 
@@ -339,6 +342,7 @@ public class AgendamentoService {
     }
 
     @Transactional
+    @Auditable(action = "CANCEL", entityType = "Agendamento", captureOldState = true, captureNewState = true)
     public AgendamentoResponse cancelar(Long id, CancelamentoRequest request) {
         Agendamento agendamento = getAgendamento(id);
 
@@ -368,6 +372,7 @@ public class AgendamentoService {
     }
 
     @Transactional
+    @Auditable(action = "RESCHEDULE", entityType = "Agendamento", captureOldState = true, captureNewState = true)
     public AgendamentoResponse reagendar(Long id, ReagendamentoRequest request) {
         Agendamento agendamento = getAgendamento(id);
 
@@ -406,6 +411,7 @@ public class AgendamentoService {
     }
 
     @Transactional
+    @Auditable(action = "NO_SHOW", entityType = "Agendamento", captureOldState = true, captureNewState = true)
     public AgendamentoResponse marcarNoShow(Long id) {
         Agendamento agendamento = getAgendamento(id);
 

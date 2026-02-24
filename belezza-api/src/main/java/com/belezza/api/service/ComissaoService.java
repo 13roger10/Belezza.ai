@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.belezza.api.security.annotation.Auditable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,6 +37,7 @@ public class ComissaoService {
      * Called automatically when an appointment is marked as completed.
      */
     @Transactional
+    @Auditable(action = "CREATE", entityType = "Comissao", captureNewState = true)
     public Comissao calcularComissao(Agendamento agendamento) {
         log.info("Calculando comissao para agendamento: {}", agendamento.getId());
 
@@ -246,6 +248,7 @@ public class ComissaoService {
      * Cancel commission (e.g., when appointment is cancelled after completion).
      */
     @Transactional
+    @Auditable(action = "CANCEL", entityType = "Comissao", captureOldState = true)
     public void cancelarComissao(Long agendamentoId) {
         comissaoRepository.findByAgendamentoId(agendamentoId)
                 .ifPresent(comissao -> {

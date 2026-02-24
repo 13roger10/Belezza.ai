@@ -48,7 +48,7 @@ class AppointmentFlowIT {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private SalaoRepository salaoRepository;
+    private SalonRepository salonRepository;
 
     @Autowired
     private ProfissionalRepository profissionalRepository;
@@ -87,13 +87,13 @@ class AppointmentFlowIT {
                 .ifPresent(usuarioRepository::delete);
 
         // Create or get salon
-        Salao salao = salaoRepository.findAll().stream().findFirst()
+        Salon salao = salonRepository.findAll().stream().findFirst()
                 .orElseGet(() -> {
-                    Salao newSalao = new Salao();
-                    newSalao.setNome("Appointment Test Salon");
-                    newSalao.setEndereco("123 Test Street");
-                    newSalao.setTelefone("+5511999990300");
-                    return salaoRepository.save(newSalao);
+                    Salon newSalon = new Salon();
+                    newSalon.setNome("Appointment Test Salon");
+                    newSalon.setEndereco("123 Test Street");
+                    newSalon.setTelefone("+5511999990300");
+                    return salonRepository.save(newSalon);
                 });
         salonId = salao.getId();
 
@@ -126,21 +126,19 @@ class AppointmentFlowIT {
                 .orElseGet(() -> {
                     Profissional newProf = new Profissional();
                     newProf.setUsuario(profUser);
-                    newProf.setSalao(salao);
-                    newProf.setNome(profUser.getNome());
+                    newProf.setSalon(salao);
                     newProf.setEspecialidade("Hair Stylist");
-                    newProf.setHoraInicio(LocalTime.of(9, 0));
-                    newProf.setHoraFim(LocalTime.of(18, 0));
                     newProf.setAtivo(true);
+                    newProf.setAceitaAgendamentoOnline(true);
                     return profissionalRepository.save(newProf);
                 });
         professionalId = profissional.getId();
 
         // Create or get service
-        Servico servico = servicoRepository.findBySalaoId(salonId).stream().findFirst()
+        Servico servico = servicoRepository.findBySalonId(salonId).stream().findFirst()
                 .orElseGet(() -> {
                     Servico newServico = new Servico();
-                    newServico.setSalao(salao);
+                    newServico.setSalon(salao);
                     newServico.setNome("Haircut");
                     newServico.setDescricao("Professional haircut");
                     newServico.setPreco(new BigDecimal("50.00"));
@@ -417,7 +415,7 @@ class AppointmentFlowIT {
                 .ifPresent(usuarioRepository::delete);
 
         // Get salon
-        Salao salao = salaoRepository.findAll().stream().findFirst()
+        Salon salao = salonRepository.findAll().stream().findFirst()
                 .orElseThrow();
 
         // 1. Register professional
@@ -445,17 +443,15 @@ class AppointmentFlowIT {
                 .orElseGet(() -> {
                     Profissional newProf = new Profissional();
                     newProf.setUsuario(profUser);
-                    newProf.setSalao(salao);
-                    newProf.setNome(profUser.getNome());
+                    newProf.setSalon(salao);
                     newProf.setEspecialidade("Makeup Artist");
-                    newProf.setHoraInicio(LocalTime.of(9, 0));
-                    newProf.setHoraFim(LocalTime.of(18, 0));
                     newProf.setAtivo(true);
+                    newProf.setAceitaAgendamentoOnline(true);
                     return profissionalRepository.save(newProf);
                 });
 
         // Get service
-        Servico servico = servicoRepository.findBySalaoId(salao.getId()).stream()
+        Servico servico = servicoRepository.findBySalonId(salao.getId()).stream()
                 .findFirst()
                 .orElseThrow();
 

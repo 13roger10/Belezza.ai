@@ -14,6 +14,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.belezza.api.entity.Usuario;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -152,11 +153,12 @@ public class AuditAspect {
 
     /**
      * Extract usuario ID from UserDetails.
-     * Override this method to extract ID from your custom UserDetails implementation.
+     * Usuario entity implements UserDetails, so we can cast and get the ID.
      */
     private Long extractUsuarioId(Object principal) {
-        // TODO: Implement extraction based on your UserDetails implementation
-        // For now, returning null
+        if (principal instanceof Usuario) {
+            return ((Usuario) principal).getId();
+        }
         return null;
     }
 

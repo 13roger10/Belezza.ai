@@ -105,7 +105,7 @@ class MetricasAgendamentoServiceTest {
     @DisplayName("Should calculate metrics with all appointments completed")
     void shouldCalculateMetricsWithAllCompleted() {
         // Given
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 10L}
         );
 
@@ -142,7 +142,7 @@ class MetricasAgendamentoServiceTest {
     @DisplayName("Should calculate metrics with mixed statuses")
     void shouldCalculateMetricsWithMixedStatuses() {
         // Given
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 7L},
                 new Object[]{StatusAgendamento.CANCELADO, 2L},
                 new Object[]{StatusAgendamento.NO_SHOW, 1L}
@@ -185,7 +185,7 @@ class MetricasAgendamentoServiceTest {
     @DisplayName("Should calculate metrics by professional")
     void shouldCalculateMetricsByProfessional() {
         // Given
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 5L}
         );
 
@@ -235,7 +235,7 @@ class MetricasAgendamentoServiceTest {
     @DisplayName("Should calculate metrics by service")
     void shouldCalculateMetricsByService() {
         // Given
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 5L}
         );
 
@@ -290,7 +290,7 @@ class MetricasAgendamentoServiceTest {
                 .dataFim(LocalDate.of(2024, 1, 3))
                 .build();
 
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 3L}
         );
 
@@ -363,7 +363,7 @@ class MetricasAgendamentoServiceTest {
     @DisplayName("Should calculate completion rate correctly")
     void shouldCalculateCompletionRateCorrectly() {
         // Given
-        List<Object[]> statusCounts = Arrays.asList(
+        List<Object[]> statusCounts = List.<Object[]>of(
                 new Object[]{StatusAgendamento.CONCLUIDO, 8L},
                 new Object[]{StatusAgendamento.CANCELADO, 2L}
         );

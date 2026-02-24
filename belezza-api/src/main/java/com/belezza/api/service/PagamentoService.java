@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.belezza.api.security.annotation.Auditable;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +29,7 @@ public class PagamentoService {
     private final AgendamentoRepository agendamentoRepository;
 
     @Transactional
+    @Auditable(action = "CREATE", entityType = "Pagamento", captureNewState = true)
     public PagamentoResponse registrar(PagamentoRequest request) {
         Agendamento agendamento = agendamentoRepository.findById(request.getAgendamentoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Agendamento", request.getAgendamentoId()));

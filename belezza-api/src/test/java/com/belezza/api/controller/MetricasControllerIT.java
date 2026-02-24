@@ -157,7 +157,7 @@ class MetricasControllerIT {
                 .roles(adminUsuario.getRole().name())
                 .build();
 
-        authToken = jwtService.generateToken(userDetails);
+        authToken = jwtService.generateAccessToken(userDetails);
     }
 
     @Test

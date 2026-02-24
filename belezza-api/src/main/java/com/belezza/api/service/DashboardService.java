@@ -75,8 +75,8 @@ public class DashboardService {
     private FaturamentoDTO calcularFaturamento(Long salonId, LocalDateTime inicio, LocalDateTime fim,
                                                 LocalDateTime inicioAnterior, LocalDateTime fimAnterior) {
         // Current period
-        BigDecimal valorTotal = pagamentoRepository.sumFaturamentoBySalonIdAndPeriod(salonId, inicio, fim);
-        if (valorTotal == null) valorTotal = BigDecimal.ZERO;
+        BigDecimal valorTotalTemp = pagamentoRepository.sumFaturamentoBySalonIdAndPeriod(salonId, inicio, fim);
+        final BigDecimal valorTotal = valorTotalTemp != null ? valorTotalTemp : BigDecimal.ZERO;
 
         BigDecimal ticketMedio = pagamentoRepository.avgTicketMedioBySalonIdAndPeriod(salonId, inicio, fim);
         if (ticketMedio == null) ticketMedio = BigDecimal.ZERO;

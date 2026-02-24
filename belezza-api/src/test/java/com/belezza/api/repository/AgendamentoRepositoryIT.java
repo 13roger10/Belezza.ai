@@ -280,7 +280,7 @@ class AgendamentoRepositoryIT extends BaseIntegrationTest {
 
         // Then
         assertThat(needingReminder).hasSize(1);
-        assertThat(needingReminder.get(0).getLembreteEnviado24h()).isFalse();
+        assertThat(needingReminder.get(0).isLembreteEnviado24h()).isFalse();
     }
 
     @Test

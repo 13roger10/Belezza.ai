@@ -107,7 +107,9 @@
       "Bash(npx next lint:*)",
       "Bash(npx eslint:*)",
       "Bash(wc:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(./mvnw.cmd test:*)",
+      "Bash(./mvnw.cmd test-compile:*)"
     ]
   }
 }

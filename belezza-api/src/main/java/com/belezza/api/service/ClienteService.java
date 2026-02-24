@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.belezza.api.security.annotation.Auditable;
 
 import java.util.List;
 
@@ -82,6 +83,7 @@ public class ClienteService {
     }
 
     @Transactional
+    @Auditable(action = "BLOCK", entityType = "Cliente", captureOldState = true, captureNewState = true)
     public void bloquear(Long id, String emailAdmin) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
@@ -97,6 +99,7 @@ public class ClienteService {
     }
 
     @Transactional
+    @Auditable(action = "UNBLOCK", entityType = "Cliente", captureOldState = true, captureNewState = true)
     public void desbloquear(Long id, String emailAdmin) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));

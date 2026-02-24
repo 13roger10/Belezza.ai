@@ -47,7 +47,7 @@ class SocialStudioFlowIT {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private SalaoRepository salaoRepository;
+    private SalonRepository salonRepository;
 
     @Autowired
     private PostRepository postRepository;
@@ -94,13 +94,13 @@ class SocialStudioFlowIT {
         assertThat(accessToken).isNotEmpty();
 
         // Create or get salon
-        Salao salao = salaoRepository.findAll().stream().findFirst()
+        Salon salao = salonRepository.findAll().stream().findFirst()
                 .orElseGet(() -> {
-                    Salao newSalao = new Salao();
-                    newSalao.setNome("Test Salon for Social Studio");
-                    newSalao.setEndereco("Test Address");
-                    newSalao.setTelefone("+5511999990101");
-                    return salaoRepository.save(newSalao);
+                    Salon newSalon = new Salon();
+                    newSalon.setNome("Test Salon for Social Studio");
+                    newSalon.setEndereco("Test Address");
+                    newSalon.setTelefone("+5511999990101");
+                    return salonRepository.save(newSalon);
                 });
 
         salonId = salao.getId();
@@ -283,13 +283,13 @@ class SocialStudioFlowIT {
         ).get("accessToken").asText();
 
         // Get or create salon
-        Salao salao = salaoRepository.findAll().stream().findFirst()
+        Salon salao = salonRepository.findAll().stream().findFirst()
                 .orElseGet(() -> {
-                    Salao newSalao = new Salao();
-                    newSalao.setNome("Complete Flow Salon");
-                    newSalao.setEndereco("Flow Address");
-                    newSalao.setTelefone("+5511999990201");
-                    return salaoRepository.save(newSalao);
+                    Salon newSalon = new Salon();
+                    newSalon.setNome("Complete Flow Salon");
+                    newSalon.setEndereco("Flow Address");
+                    newSalon.setTelefone("+5511999990201");
+                    return salonRepository.save(newSalon);
                 });
 
         // 2. Create post (Upload)
