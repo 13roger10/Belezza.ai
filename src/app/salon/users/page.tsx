@@ -86,10 +86,17 @@ export default function SalonUsersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
+  // Roles padrão como fallback
+  const DEFAULT_ROLES: RoleOption[] = [
+    { value: "ADMIN", label: "Administrador do Salão", authority: "ROLE_ADMIN" },
+    { value: "PROFISSIONAL", label: "Profissional/Funcionário", authority: "ROLE_PROFISSIONAL" },
+    { value: "CLIENTE", label: "Cliente", authority: "ROLE_CLIENTE" },
+  ];
+
   // Estados de filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
-  const [roles, setRoles] = useState<RoleOption[]>([]);
+  const [roles, setRoles] = useState<RoleOption[]>(DEFAULT_ROLES);
 
   // Estados de modais
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -114,9 +121,13 @@ export default function SalonUsersPage() {
     const loadRoles = async () => {
       try {
         const rolesData = await userService.getRoles();
-        setRoles(rolesData);
+        if (rolesData && rolesData.length > 0) {
+          setRoles(rolesData);
+        }
+        // Se rolesData estiver vazio, mantém os DEFAULT_ROLES
       } catch (error) {
         console.error("Erro ao carregar roles:", error);
+        // Em caso de erro, mantém os DEFAULT_ROLES
       }
     };
     loadRoles();
@@ -485,6 +496,7 @@ export default function SalonUsersPage() {
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               error={formErrors.nome}
               placeholder="Nome completo"
+              autoComplete="off"
             />
             <Input
               label="Email *"
@@ -493,6 +505,7 @@ export default function SalonUsersPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               error={formErrors.email}
               placeholder="email@exemplo.com"
+              autoComplete="off"
             />
           </div>
 
@@ -505,6 +518,7 @@ export default function SalonUsersPage() {
               error={formErrors.password}
               placeholder="Mínimo 6 caracteres"
               showPasswordToggle
+              autoComplete="new-password"
             />
             <Input
               label="Telefone"
@@ -596,6 +610,7 @@ export default function SalonUsersPage() {
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               error={formErrors.nome}
               placeholder="Nome completo"
+              autoComplete="off"
             />
             <Input
               label="Email *"
@@ -604,6 +619,7 @@ export default function SalonUsersPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               error={formErrors.email}
               placeholder="email@exemplo.com"
+              autoComplete="off"
             />
           </div>
 
@@ -617,6 +633,7 @@ export default function SalonUsersPage() {
               placeholder="Deixe em branco para manter"
               hint="Preencha apenas se quiser alterar"
               showPasswordToggle
+              autoComplete="new-password"
             />
             <Input
               label="Telefone"

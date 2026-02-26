@@ -47,7 +47,7 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(Long id) {
-        Cliente cliente = clienteRepository.findById(id)
+        Cliente cliente = clienteRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
         return ClienteResponse.fromEntity(cliente);
     }

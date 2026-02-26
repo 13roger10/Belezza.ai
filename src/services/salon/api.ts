@@ -36,10 +36,18 @@ async function fetchApi<T>(
     'Content-Type': 'application/json',
   };
 
-  // Get auth token from localStorage or cookie
-  const token = typeof window !== 'undefined'
-    ? localStorage.getItem('auth_token')
-    : null;
+  // Get auth token from localStorage, trying multiple keys
+  let token: string | null = null;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('salon_auth_token')
+      || localStorage.getItem('auth_token')
+      || null;
+
+    // Debug log
+    if (!token) {
+      console.log('[API] No token found in localStorage');
+    }
+  }
 
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
@@ -132,7 +140,7 @@ export const api = {
     formData.append(fieldName, file);
 
     const token = typeof window !== 'undefined'
-      ? localStorage.getItem('auth_token')
+      ? localStorage.getItem('salon_auth_token')
       : null;
 
     const headers: HeadersInit = {};

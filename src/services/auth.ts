@@ -161,7 +161,7 @@ export const authService = {
 
     // Em produção, verificar com API
     try {
-      await api.get("/auth/verify", {
+      await api.get("/api/auth/verify", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -183,7 +183,7 @@ export const authService = {
     }
 
     // Em produção, buscar da API
-    const response = await api.get<User>("/auth/profile", {
+    const response = await api.get<User>("/api/auth/profile", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -209,7 +209,7 @@ export const authService = {
 
     // Em produção, usar API
     const response = await api.post<LoginResponse>(
-      "/auth/refresh",
+      "/api/auth/refresh",
       {},
       {
         headers: {

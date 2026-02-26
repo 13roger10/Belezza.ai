@@ -80,15 +80,17 @@
         </encoder>
     </appender>
 
-    <!-- Development Profile -->
-    <springProfile name="dev,default">
+    <!-- Development Profile (including local) -->
+    <springProfile name="dev,default,local">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </root>
 
         <!-- Application packages -->
         <logger name="com.belezza" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </logger>
 
         <!-- Spring Framework -->

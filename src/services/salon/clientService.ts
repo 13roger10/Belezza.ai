@@ -12,13 +12,26 @@ import type {
 } from '@/types/salon';
 import type { PaginatedResponse, PaginationParams } from '@/types/salon/common';
 
-const BASE_PATH = '/salon/clients';
+const BASE_PATH = '/clientes';
 
 export const clientService = {
   // List clients with pagination and filters
   list: (
-    params: PaginationParams & ClientFilters
+    params: PaginationParams & ClientFilters & { salonId?: string | number }
   ): Promise<PaginatedResponse<Client>> => {
+    // Se tiver salonId, usa o endpoint específico do backend
+    if (params.salonId) {
+      return api.get<Client[]>(`${BASE_PATH}/salon/${params.salonId}`, params)
+        .then((clients) => ({
+          data: clients,
+          meta: {
+            total: clients.length,
+            page: params.page || 1,
+            limit: params.limit || 10,
+            totalPages: Math.ceil(clients.length / (params.limit || 10)),
+          },
+        }));
+    }
     return api.get<PaginatedResponse<Client>>(BASE_PATH, params);
   },
 

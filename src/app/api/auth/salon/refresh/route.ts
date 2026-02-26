@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SalonAuthUser, AuthUserRole, AUTH_ROLE_PERMISSIONS, AuthLoginResponse } from "@/types/salon/auth";
 
-// Backend API URL
-const BACKEND_URL = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+// Backend API URL (sem /api no final)
+const BACKEND_URL = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 // Interface para resposta do backend
 interface BackendAuthResponse {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Chama o backend Java para refresh
-    const backendResponse = await fetch(`${BACKEND_URL}/auth/refresh`, {
+    const backendResponse = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

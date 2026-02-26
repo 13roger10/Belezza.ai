@@ -406,7 +406,7 @@ export default function SalonDashboardPage() {
               }
             >
               <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                   <AreaChart data={revenueData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -448,7 +448,7 @@ export default function SalonDashboardPage() {
           >
             <div className="flex h-72 items-center">
               <div className="w-1/2">
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={250} minHeight={200}>
                   <PieChart>
                     <Pie
                       data={servicesRanking}
@@ -497,7 +497,7 @@ export default function SalonDashboardPage() {
             subtitle="Últimos 6 meses"
           >
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                 <BarChart data={newClientsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis
@@ -534,7 +534,7 @@ export default function SalonDashboardPage() {
             subtitle="Horários vagos hoje"
           >
             <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                 <BarChart data={availableSlots} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
                   <XAxis

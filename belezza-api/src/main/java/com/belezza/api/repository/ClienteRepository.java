@@ -13,18 +13,23 @@ import java.util.Optional;
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    Optional<Cliente> findByUsuarioIdAndSalonId(Long usuarioId, Long salonId);
+    @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario JOIN FETCH c.salon WHERE c.usuario.id = :usuarioId AND c.salon.id = :salonId")
+    Optional<Cliente> findByUsuarioIdAndSalonId(@Param("usuarioId") Long usuarioId, @Param("salonId") Long salonId);
 
-    List<Cliente> findBySalonIdAndAtivoTrue(Long salonId);
+    @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario JOIN FETCH c.salon WHERE c.id = :id")
+    Optional<Cliente> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario JOIN FETCH c.salon WHERE c.salon.id = :salonId AND c.ativo = true")
+    List<Cliente> findBySalonIdAndAtivoTrue(@Param("salonId") Long salonId);
 
     List<Cliente> findByUsuarioId(Long usuarioId);
 
     boolean existsByUsuarioIdAndSalonId(Long usuarioId, Long salonId);
 
-    @Query("SELECT c FROM Cliente c WHERE c.salon.id = :salonId AND c.bloqueado = false AND c.ativo = true")
+    @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario JOIN FETCH c.salon WHERE c.salon.id = :salonId AND c.bloqueado = false AND c.ativo = true")
     List<Cliente> findActiveNotBlockedBySalonId(@Param("salonId") Long salonId);
 
-    @Query("SELECT c FROM Cliente c WHERE c.salon.id = :salonId AND c.noShows >= :maxNoShows")
+    @Query("SELECT c FROM Cliente c JOIN FETCH c.usuario JOIN FETCH c.salon WHERE c.salon.id = :salonId AND c.noShows >= :maxNoShows")
     List<Cliente> findByNoShowsExceeded(@Param("salonId") Long salonId, @Param("maxNoShows") int maxNoShows);
 
     @Modifying

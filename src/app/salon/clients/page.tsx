@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { clientService } from "@/services/salon/clientService";
 import { useSalonAuth } from "@/contexts/SalonAuthContext";
+import { useUnit } from "@/contexts/UnitContext";
 import type {
   Client,
   ClientCreateInput,
@@ -139,6 +140,7 @@ const LoyaltyProgress = ({ current, total = 10 }: { current: number; total?: num
 
 export default function ClientsPage() {
   const { user } = useSalonAuth();
+  const { selectedUnitId } = useUnit();
 
   // Estados de listagem
   const [clients, setClients] = useState<Client[]>([]);
@@ -189,6 +191,7 @@ export default function ClientsPage() {
       const response = await clientService.list({
         page,
         limit: 10,
+        salonId: selectedUnitId || "1", // Default to salon 1 if no unit selected
         ...filters,
       });
 
@@ -260,7 +263,7 @@ export default function ClientsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchTerm, statusFilter, loyaltyFilter]);
+  }, [page, searchTerm, statusFilter, loyaltyFilter, selectedUnitId]);
 
   useEffect(() => {
     loadClients();
