@@ -283,7 +283,7 @@ export default function EditorPage() {
     hasCheckedImage.current = true;
     if (!initialImage) {
       warning("Nenhuma imagem", "Selecione uma imagem primeiro");
-      router.push("/admin/capture");
+      router.replace("/admin/capture");
     }
   }, [initialImage, isLoading, router, warning]);
 

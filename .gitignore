@@ -12,8 +12,12 @@ node_modules
 !.yarn/releases
 !.yarn/versions
 
-# JDK local
-belezza-api/tools/jdk-21.0.4/
+# Local tools (JDK, Node, Maven downloaded for local dev)
+/tools/
+belezza-api/tools/
+
+# Logs
+*.log
 
 # testing
 /coverage

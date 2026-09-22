@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AdminLayout } from "@/components/layout";
@@ -70,7 +70,11 @@ export default function CreatePostPage() {
   const [activeSection, setActiveSection] = useState<"caption" | "hashtags">("caption");
 
   // Carregar imagem do IndexedDB
+  const hasCheckedImage = useRef(false);
   useEffect(() => {
+    if (hasCheckedImage.current) return;
+    hasCheckedImage.current = true;
+
     const loadData = async () => {
       try {
         const storedImage = await imageStorage.getItem("editedImage");
@@ -78,7 +82,7 @@ export default function CreatePostPage() {
           setImageData(storedImage);
         } else {
           warning("Nenhuma imagem", "Selecione e edite uma imagem primeiro");
-          router.push("/admin/capture");
+          router.replace("/admin/capture");
         }
 
         // Carregar legenda gerada pela IA (se existir)
@@ -101,7 +105,7 @@ export default function CreatePostPage() {
       } catch (error) {
         console.error("Failed to load image:", error);
         warning("Erro ao carregar", "Não foi possível carregar a imagem");
-        router.push("/admin/capture");
+        router.replace("/admin/capture");
       }
     };
     loadData();

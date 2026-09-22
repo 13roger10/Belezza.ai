@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AdminLayout } from "@/components/layout";
@@ -28,7 +28,11 @@ export default function CaptionPage() {
   const [lastOptions, setLastOptions] = useState<CaptionGenerationOptions | null>(null);
 
   // Carregar imagem do IndexedDB
+  const hasCheckedImage = useRef(false);
   useEffect(() => {
+    if (hasCheckedImage.current) return;
+    hasCheckedImage.current = true;
+
     const loadImage = async () => {
       try {
         const storedImage = await imageStorage.getItem("editedImage");
@@ -36,12 +40,12 @@ export default function CaptionPage() {
           setImageData(storedImage);
         } else {
           warning("Nenhuma imagem", "Edite uma imagem primeiro");
-          router.push("/admin/capture");
+          router.replace("/admin/capture");
         }
       } catch (error) {
         console.error("Failed to load edited image:", error);
         warning("Erro ao carregar", "Não foi possível carregar a imagem");
-        router.push("/admin/capture");
+        router.replace("/admin/capture");
       }
     };
     loadImage();

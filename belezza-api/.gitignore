@@ -89,3 +89,6 @@ docker-compose.override.yml
 
 # Local development
 local/
+
+# Local tools (JDK, Maven downloaded for local dev)
+tools/

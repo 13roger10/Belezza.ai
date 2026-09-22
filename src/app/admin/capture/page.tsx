@@ -22,14 +22,22 @@ export default function CapturePage() {
     setMode("camera");
   }, []);
 
+  const goBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/admin/dashboard");
+    }
+  }, [router]);
+
   const handleCancel = useCallback(() => {
     if (mode === "preview") {
       setMode("select");
       setCapturedImage(null);
     } else {
-      router.back();
+      goBack();
     }
-  }, [mode, router]);
+  }, [mode, goBack]);
 
   const handleConfirm = useCallback(async () => {
     if (capturedImage) {
@@ -86,7 +94,7 @@ export default function CapturePage() {
       {/* Header */}
       <header className="flex items-center justify-between border-b border-violet-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-4 py-3 backdrop-blur-sm">
         <button
-          onClick={() => router.back()}
+          onClick={goBack}
           className="flex items-center text-gray-600 dark:text-gray-400 transition-colors hover:text-gray-900 dark:hover:text-white"
         >
           <svg
